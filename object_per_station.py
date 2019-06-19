@@ -82,62 +82,57 @@ def object(demand, zone, stations, time):
         return start, end
 
 
-    def station_init_bikes(data, bikes_list, list, capacity_i):
+    def station_init_bikes(data, list, capacity_i):
         data.loc[list, 'bikes'] = round(capacity_i * randint(0, 100) / 100)
         return data
 
     # stations['bikes'] = round(stations['capacity'] * 0.5)  # 设置车子数量
     zone_list = zone.drop(zone[zone[['zone']].duplicated()].index, axis=0)['zone']  # 区域列表
+    stop = 0
+    gap_sum, start_demand_sum, end_demands_sum = 0, 0, 0  # 统计缺口总量, 满足的借车需求量, 满足的还车需求量
     for z in zone_list:
         stop_list = []
         zone_data = demand[demand['zone'] == z]  # 依此读取每个区域的数据
         stations_list = list(zone[zone['zone'] == z]['id'])  # 获取该区域站点的id
         length_stations = len(stations_list) # 获取该区域站点的数量
-        for day in range(time):
-            day_demand = zone_data[zone_data['day'] == day]
-            capacity = stations.loc[stations_list]['capacity']  # 获取区域内站点的容量
-            bikes = stations.loc[stations_list]['bikes']  # 获取区域内站点的车子数量
-            for time_1 in range(100):
-                # print('round', t2, 'day:', day + 1, 'zone:', z, len_day_demand, time_1)
-                start_demands, end_demands = random_start(length_stations, zone_data)  # 分配区域借车量
-                judge = start_demands <= bikes + end_demands
-                judge_i = end_demands <= capacity - bikes + start_demands
-                if judge[judge == True].sum() == length_stations and judge_i[
-                    judge_i == True].sum() == length_stations:
+        for reset_bikes in range(500):
+            for day in range(time):
+                day_demand = zone_data[zone_data['day'] == day]
+                capacity = stations.loc[stations_list]['capacity']  # 获取区域内站点的容量
+                bikes = stations.loc[stations_list]['bikes']  # 获取区域内站点的车子数量
+                for time_1 in range(100):
+                    # print('round', t2, 'day:', day + 1, 'zone:', z, len_day_demand, time_1)
+                    start_demands, end_demands = random_start(length_stations, zone_data)  # 分配区域借车量
+                    judge = start_demands <= bikes + end_demands
+                    judge_i = end_demands <= capacity - bikes + start_demands
+                    if judge[judge == True].sum() == length_stations and judge_i[
+                        judge_i == True].sum() == length_stations:
+                        break
+                    elif time_1 == 99:
+                        stop = 1
+                for time_1 in range(100):
+                    # print('round', t2, 'day:', day + 1, 'zone:', z, len_day_demand, time_1)
+                    start_demands, end_demands = random_start(length_stations, zone_data)  # 分配区域借车量
+                    judge = start_demands <= bikes + end_demands
+                    judge_i = end_demands <= capacity - bikes + start_demands
+                    if judge[judge == True].sum() == length_stations and judge_i[
+                        judge_i == True].sum() == length_stations:
+                        break
+                    elif time_1 == 99:
+                        stop = 1
+                if stop == 1:
+                    stop_list.append(stations_list)
+                    stations = station_init_bikes(stations, stations_list, capacity)
                     break
-                elif time_1 == 99:
-                    stop = 1
-            for time_1 in range(100):
-                # print('round', t2, 'day:', day + 1, 'zone:', z, len_day_demand, time_1)
-                start_demands, end_demands = random_start(length_stations, zone_data)  # 分配区域借车量
-                judge = start_demands <= bikes + end_demands
-                judge_i = end_demands <= capacity - bikes + start_demands
-                if judge[judge == True].sum() == length_stations and judge_i[
-                    judge_i == True].sum() == length_stations:
-                    break
-                elif time_1 == 99:
-                    stop = 1
-            if stop == 1:
-                stop_list.append(stations_list)
-                stations = station_init_bikes(stations, stations_list, capacity)
-                break
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+                else:
+                    gap = [end_demands[i] - start_demands[i] for i in range(length_stations)]
+                    stations.loc[stations_list, 'bikes'] = bikes + gap
+                    start_demand = sum(start_demands)
+                    end_demands = sum(end_demands)
+                    gap = [abs(i) for i in gap]
+                    start_demand_sum += start_demand
+                    end_demands_sum += end_demands
+                    gap_sum += sum(gap)
 
     t = time
     stop_list_set = []  # 统计问题区域（需求量无法分配）
