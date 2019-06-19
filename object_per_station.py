@@ -53,7 +53,7 @@ def main(demand, zone, stations, new_station, day):
     capacity_i = new_station[['id']]
     capacity_i['capacity'] = 60
     stations = pd.concat([stations, capacity_i])  # 加入新站点
-    stations['bikes'] = stations['capacity'].apply(lambda x: x * randint(2, 9)/10)  # 设置车子数量
+    stations['bikes'] = stations['capacity'].apply(lambda x: round(x * randint(2, 9)/10))  # 设置车子数量
     # 加入新站点
     zone = pd.concat([new_station, zone])  # 加入新站点
     zone_count_stations = zone.groupby(['zone'])['id'].count().reset_index()  # 统计每个区域的站点数量
@@ -92,13 +92,27 @@ def object(demand, zone, stations, time):
     zone_list = zone.drop(zone[zone[['zone']].duplicated()].index, axis=0)['zone']  # 区域列表
     for z in zone_list:
         zone_data = demand[demand['zone'] == z]  # 依此读取每个区域的数据
-        length_stations = int(zone_data['count_stations'])  # 获取该区域站点的数量
         stations_list = list(zone[zone['zone'] == z]['id'])  # 获取该区域站点的id
+        length_stations = len(stations_list) # 获取该区域站点的数量
         for day in range(time):
             day_demand = zone_data[zone_data['day'] == day]
             capacity = stations.loc[stations_list]['capacity']  # 获取区域内站点的容量
             bikes = stations.loc[stations_list]['bikes']  # 获取区域内站点的车子数量
-            
+            for time_1 in range(100):
+                # print('round', t2, 'day:', day + 1, 'zone:', z, len_day_demand, time_1)
+                start_demands, end_demands = random_start(length_stations, zone_data)  # 分配区域借车量
+                judge = start_demands <= bikes + end_demands
+                judge_i = end_demands <= capacity - bikes + start_demands
+                if judge[judge == True].sum() == length_stations and judge_i[
+                    judge_i == True].sum() == length_stations:
+                    break
+                elif time_1 == 99:
+                    stop = 1
+
+
+
+
+
 
 
 
