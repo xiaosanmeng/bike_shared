@@ -89,8 +89,11 @@ def object(demand, zone, stations, time):
         return data
 
     # stations['bikes'] = round(stations['capacity'] * 0.5)  # 设置车子数量
-    zone_list =
-    for z in
+    zone_list = zone.drop(zone[zone[['zone']].duplicated()].index, axis=0)['zone']  # 区域列表
+    for z in zone_list:
+
+
+
 
 
 
