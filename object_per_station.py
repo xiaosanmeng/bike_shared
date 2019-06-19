@@ -98,6 +98,7 @@ def object(demand, zone, stations, time):
             day_demand = zone_data[zone_data['day'] == day]
             capacity = stations.loc[stations_list]['capacity']  # 获取区域内站点的容量
             bikes = stations.loc[stations_list]['bikes']  # 获取区域内站点的车子数量
+            
 
 
 
