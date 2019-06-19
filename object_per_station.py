@@ -93,11 +93,13 @@ def object(demand, zone, stations, time):
     for z in zone_list:
         zone_data = demand[demand['zone'] == z]  # 依此读取每个区域的数据
         length_stations = int(zone_data['count_stations'])  # 获取该区域站点的数量
-        stations_list = list(zone[zone['zone'] == zone_data['zone']]['id'])  # 获取该区域站点的id
-        capacity = stations.loc[stations_list]['capacity']  # 获取区域内站点的容量
-        bikes = stations.loc[stations_list]['bikes']  # 获取区域内站点的车子数量
+        stations_list = list(zone[zone['zone'] == z]['id'])  # 获取该区域站点的id
         for day in range(time):
             day_demand = zone_data[zone_data['day'] == day]
+            capacity = stations.loc[stations_list]['capacity']  # 获取区域内站点的容量
+            bikes = stations.loc[stations_list]['bikes']  # 获取区域内站点的车子数量
+
+
 
 
 
