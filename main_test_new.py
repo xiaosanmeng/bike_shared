@@ -43,7 +43,7 @@ def main(demand, zone, old_stations, days):
     object(demand, zone, old_stations, days, new_capacity, new_station)
 
 
-main(demand_i, zone_i, stations_i, 10)
+main(demand_i, zone_i, stations_i, 5)
 
 
 # 204区域 3000501     216区域  3003300
