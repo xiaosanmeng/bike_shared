@@ -128,4 +128,4 @@ def main(demand, zone, stations, new_station, day):
     # stations['bikes'] = stations['capacity'].apply(lambda x: x * random.randint(4, 7)/10)  # 设置车子数量
     stations = stations.set_index('id')
     object(demand, zone, stations, day)
-main(demand_i, zone_i, stations_i, new_station_i, 1)
+main(demand_i, zone_i, stations_i, new_station_i, 5)
