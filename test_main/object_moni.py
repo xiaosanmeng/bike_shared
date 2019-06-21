@@ -32,7 +32,7 @@ def object(time_i, demand, zone, stations, time):
         return start, end
 
     def station_init_bikes(reset_bikes, data, list, capacity_i):
-        data.loc[list, 'bikes'] = round(capacity_i * (reset_bikes+1 / 20))  # 所有站点比例一致
+        data.loc[list, 'bikes'] = round(capacity_i * (reset_bikes / 20))  # 所有站点比例一致
         # data.loc[list, 'bikes'] = round(capacity_i * randint(0, 100) / 100)  # 所有站点比例一致
         # data.loc[list, 'bikes'] = capacity_i.apply(lambda x: round(x * randint(0, 100) / 100))  # 站点比例不一致
         return data
@@ -55,7 +55,7 @@ def object(time_i, demand, zone, stations, time):
                 day_demand = zone_data[zone_data['day'] == (day+1)].reset_index(drop=True)
                 capacity = stations_copy.loc[stations_list]['capacity']  # 获取区域内站点的容量
                 bikes = stations_copy.loc[stations_list]['bikes']  # 获取区域内站点的车子数量
-                for time_1 in range(100):
+                for time_1 in range(200):
                     # day_demand = pd.Series(day_demand)
                     print(time_i, 'round', reset_bikes, 'day:', day + 1, 'zone:', z, "%:", index, len(zone_list), time_1)
                     start_demands, end_demands = random_start(length_stations, day_demand)

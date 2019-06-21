@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from random import randint
-from object_per_station import object
+from object_moni import object
 
 # 读取区域需求量
 demand_i = pd.read_csv('F:/bikedata/bike_datas/test/zone_day.csv')
@@ -20,9 +20,9 @@ def main(demand, zone, stations, day):
     new_station['id'] = new_station['zone'].apply(lambda x: int(str(x)[::]))
     capacity_i = new_station[['id']]
     object_list = []
-    for time_i in range(1):
-        capacity_i['capacity'] = 60
-        capacity_i['capacity'] = capacity_i['capacity'].apply(lambda x: round(x * randint(40, 100) / 100))
+    for time_i in range(10):
+        capacity_i['capacity'] = 80
+        capacity_i['capacity'] = capacity_i['capacity'].apply(lambda x: round(x * randint(50, 100) / 100))
         # 加入新站点
         stations_i = pd.concat([stations, capacity_i])  # 加入新站点
         zone_i = pd.concat([new_station, zone], sort=True)  # 加入新站点
@@ -38,12 +38,16 @@ def main(demand, zone, stations, day):
     return object_list
 
 
-
-
-
-
-z = main(demand_i, zone_i, stations_i, 5)
+day = 5
+z = main(demand_i, zone_i, stations_i, day)
 print(z)
+
+# 把需求量缩小一半，对比加入新站点的情况
+
+
+# 容量0.7-1  [(11741.0, 130048.0, 130317.0), (11848.0, 130760.0, 131122.0), (11723.0, 130048.0, 130317.0), (11868.0, 130760.0, 131122.0), (11854.0, 130760.0, 131122.0), (11858.0, 130760.0, 131122.0), (11759.0, 130048.0, 130317.0), (11864.0, 130760.0, 131122.0), (11734.0, 130010.0, 130270.0), (11870.0, 130760.0, 131122.0)]
+# 容量0.5-1  [(11611.0, 129298.0, 129465.0), (11692.0, 129545.0, 129765.0), (11601.0, 129298.0, 129465.0), (11580.0, 127935.0, 128079.0), (11738.0, 130010.0, 130270.0), (11568.0, 128795.0, 128913.0), (11828.0, 130760.0, 131122.0), (11515.0, 127688.0, 127779.0), (11626.0, 128400.0, 128584.0), (11817.0, 130257.0, 130570.0)]
+
 
 
 
