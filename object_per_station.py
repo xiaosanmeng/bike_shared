@@ -32,7 +32,7 @@ def object(time_i, demand, zone, stations, time):
         return start, end
 
     def station_init_bikes(reset_bikes, data, list, capacity_i):
-        data.loc[list, 'bikes'] = round(capacity_i * (reset_bikes+1 / 20))  # 所有站点比例一致
+        data.loc[list, 'bikes'] = round(capacity_i * ((reset_bikes+1) / 20))  # 所有站点比例一致
         # data.loc[list, 'bikes'] = round(capacity_i * randint(0, 100) / 100)  # 所有站点比例一致
         # data.loc[list, 'bikes'] = capacity_i.apply(lambda x: round(x * randint(0, 100) / 100))  # 站点比例不一致
         return data
@@ -45,9 +45,9 @@ def object(time_i, demand, zone, stations, time):
         zone_data = demand[demand['zone'] == z]  # 依此读取每个区域的数据
         stations_list = list(zone[zone['zone'] == z]['id'])  # 获取该区域站点的id
         length_stations = len(stations_list)  # 获取该区域站点的数量
+        stations_copy = stations.copy()
         for reset_bikes in range(20):  # 寻找可行初始解的次数
             stop = 0
-            stations_copy = stations.copy()
             start_demands_copy, end_demands_copy, gap_sum_copy = 0, 0, 0
             for day in range(time):
                 if (day+1) not in list(zone_data['day']):
@@ -69,6 +69,7 @@ def object(time_i, demand, zone, stations, time):
                     elif time_1 == 99:
                         stop = 1
                 if stop == 1:
+                    stations_copy = stations.copy()
                     stations_copy = station_init_bikes(reset_bikes, stations_copy, stations_list, capacity)
                     break
                 else:
@@ -82,15 +83,15 @@ def object(time_i, demand, zone, stations, time):
                     gap_sum_copy += sum(gap)
                     stop = 2
             if reset_bikes == 19:
-                stop_list.append([stations_list, day])
+                stop_list.append([index, stations_list, day])
             if stop == 2:
                 start_demand_sum += start_demands_copy
                 end_demands_sum += end_demands_copy
                 gap_sum += gap_sum_copy
                 stations = stations_copy
                 break
-    # print(stop_list)
-    # print(gap_sum, start_demand_sum, end_demands_sum)
+    print(stop_list)
+    print(gap_sum, start_demand_sum, end_demands_sum)
     return (gap_sum, start_demand_sum, end_demands_sum)
 
 

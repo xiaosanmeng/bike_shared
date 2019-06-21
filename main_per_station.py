@@ -11,6 +11,8 @@ zone_i = pd.read_csv('F:/bikedata/bike_datas/station_datas.csv').rename(
 # 读取站点信息
 stations_i = pd.read_csv('F:/bikedata/bike_datas/station_datas.csv')[['station_id', 'capacity']].\
     rename(columns={'station_id': 'id'})
+# demand_i['start'] = round(demand_i['start'] * 0.5)
+# demand_i['end'] = round(demand_i['end'] * 0.5)
 
 
 def main(demand, zone, stations, day):
@@ -22,7 +24,6 @@ def main(demand, zone, stations, day):
     object_list = []
     for time_i in range(1):
         capacity_i['capacity'] = 60
-        capacity_i['capacity'] = capacity_i['capacity'].apply(lambda x: round(x * randint(40, 100) / 100))
         # 加入新站点
         stations_i = pd.concat([stations, capacity_i])  # 加入新站点
         zone_i = pd.concat([new_station, zone], sort=True)  # 加入新站点
@@ -35,6 +36,7 @@ def main(demand, zone, stations, day):
         stations_i = stations_i.set_index('id')
         t = object(time_i, demand_i, zone_i, stations_i, day)
         object_list.append(t)
+        capacity_i['capacity'] = capacity_i['capacity'].apply(lambda x: round(x * randint(40, 100) / 100))
     return object_list
 
 
