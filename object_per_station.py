@@ -1,45 +1,24 @@
-import pandas as pd
-import numpy as np
 from random import randint
 
 
-
-#  老站点寻求可行解的目标函数
-
-# # 读取区域需求量
-# demand = pd.read_csv('F:/bikedata/bike_datas/test/zone_day.csv')
-# # 读取区域包含的站点信息
-# zone = pd.read_csv('F:/bikedata/bike_datas/station_datas.csv').rename(
-#     columns={'station_id': 'id', 'zone_id': 'zone'})[['id', 'zone']]
-# # 读取站点信息
-# stations = pd.read_csv('F:/bikedata/bike_datas/station_datas.csv')[['station_id', 'capacity']].\
-#     rename(columns={'station_id': 'id'})
-# new_station = pd.DataFrame()
-# ############################  加入新站点
-# # new_station['zone'] = zone.drop(zone[zone[['zone']].duplicated()].index,axis=0)['zone']
-# # new_station['id'] = new_station['zone'].apply(lambda x: int(str(x)[::]))
-# # capacity_i = new_station[['id']]
-# # capacity_i['capacity'] = 60
-# # stations = pd.concat([stations, capacity_i])  # 加入新站点
-# ##############################
-# zone = pd.concat([new_station, zone])  # 加入新站点
-# zone_count_stations = zone.groupby(['zone'])['id'].count().reset_index()  # 统计每个区域的站点数量
-# demand = pd.merge(demand, zone_count_stations, how='left', on='zone').rename(columns={'id': 'count_stations'})
-# # stations['bikes'] = round(stations['capacity'] * 0.5)  # 设置车子数量
-# stations['bikes'] = round(stations['capacity'] * 0.6)  # 设置车子数量
-# # stations['bikes'] = stations['capacity'].apply(lambda x: x * random.randint(4, 7)/10)  # 设置车子数量
-# stations = stations.set_index('id')
-#
-# # 读取站点空白表
-# stations_demands = pd.read_csv('F:/bikedata/bike_datas/test/empty.csv')
-
-
-
-
-
-
-
 def object(demand, zone, stations, time):
+    # def random_start(length, demands_i):
+    #     points = [randint(0, 100) for i in range(length - 1)]  # 生成几个随机点
+    #     points = [0] + sorted(points) + [100]  # 排个队
+    #     points = [(points[i + 1] - points[i]) / 100 for i in range(length - 1)]
+    #     start_demand = demands_i['start'][0]
+    #     start = [round(points[i] * start_demand) for i in range(length - 1)]
+    #     start.append(start_demand - sum(start))
+    #     return start
+    #
+    # def random_end(length, demands_i):
+    #     points = [randint(0, 100) for i in range(length - 1)]  # 生成几个随机点
+    #     points = [0] + sorted(points) + [100]  # 排个队
+    #     points = [(points[i + 1] - points[i]) / 100 for i in range(length - 1)]
+    #     end_demand = demands_i['end'][0]
+    #     end = [round(points[i] * end_demand) for i in range(length - 1)]
+    #     end.append(end_demand - sum(end))
+    #     return end
     def random_start(length, demands_i):
         points = [randint(0, 100) for i in range(length - 1)]  # 生成几个随机点
         points = [0] + sorted(points) + [100]  # 排个队
@@ -52,8 +31,10 @@ def object(demand, zone, stations, time):
         end.append(end_demand - sum(end))
         return start, end
 
-    def station_init_bikes(data, list, capacity_i):
-        data.loc[list, 'bikes'] = round(capacity_i * randint(0, 100) / 100)
+    def station_init_bikes(reset_bikes, data, list, capacity_i):
+        data.loc[list, 'bikes'] = round(capacity_i * (reset_bikes / 100))  # 所有站点比例一致
+        # data.loc[list, 'bikes'] = round(capacity_i * randint(0, 100) / 100)  # 所有站点比例一致
+        # data.loc[list, 'bikes'] = capacity_i.apply(lambda x: round(x * randint(0, 100) / 100))  # 站点比例不一致
         return data
 
     # stations['bikes'] = round(stations['capacity'] * 0.5)  # 设置车子数量
@@ -64,9 +45,9 @@ def object(demand, zone, stations, time):
         zone_data = demand[demand['zone'] == z]  # 依此读取每个区域的数据
         stations_list = list(zone[zone['zone'] == z]['id'])  # 获取该区域站点的id
         length_stations = len(stations_list)  # 获取该区域站点的数量
-        for reset_bikes in range(100):  # 寻找可行初始解的次数
+        for reset_bikes in range(20):  # 寻找可行初始解的次数
             stop = 0
-            stations_copy = stations
+            stations_copy = stations.copy()
             start_demands_copy, end_demands_copy, gap_sum_copy = 0, 0, 0
             for day in range(time):
                 if (day+1) not in list(zone_data['day']):
@@ -77,16 +58,18 @@ def object(demand, zone, stations, time):
                 for time_1 in range(100):
                     # day_demand = pd.Series(day_demand)
                     print('round', reset_bikes, 'day:', day + 1, 'zone:', z, "%:", index, len(zone_list), time_1)
-                    start_demands, end_demands = random_start(length_stations, day_demand)  # 分配区域借车量
+                    start_demands, end_demands = random_start(length_stations, day_demand)
+                    # start_demands = random_start(length_stations, day_demand)  # 分配区域借车量
+                    # end_demands = random_end(length_stations, day_demand)  # 分配区域借车量
                     judge = start_demands <= bikes + end_demands
                     judge_i = end_demands <= capacity - bikes + start_demands
-                    if judge[judge == True].sum() == length_stations and judge_i[
-                        judge_i == True].sum() == length_stations:
+                    if judge[judge == True].sum() == length_stations and \
+                            judge_i[judge_i == True].sum() == length_stations:
                         break
                     elif time_1 == 99:
                         stop = 1
                 if stop == 1:
-                    stations_copy = station_init_bikes(stations_copy, stations_list, capacity)
+                    stations_copy = station_init_bikes(reset_bikes, stations_copy, stations_list, capacity)
                     break
                 else:
                     gap = [end_demands[i] - start_demands[i] for i in range(length_stations)]
@@ -98,17 +81,19 @@ def object(demand, zone, stations, time):
                     end_demands_copy += end_demands
                     gap_sum_copy += sum(gap)
                     stop = 2
-            if reset_bikes == 99:
+            if reset_bikes == 19:
                 stop_list.append([stations_list, day])
             if stop == 2:
-
                 start_demand_sum += start_demands_copy
                 end_demands_sum += end_demands_copy
                 gap_sum += gap_sum_copy
                 stations = stations_copy
                 break
-    print(stop_list)
-    print(gap_sum, start_demand_sum, end_demands_sum)
+    # print(stop_list)
+    # print(gap_sum, start_demand_sum, end_demands_sum)
+    return (gap_sum, start_demand_sum, end_demands_sum)
+
+
 
 
 
