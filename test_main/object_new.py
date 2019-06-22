@@ -46,7 +46,7 @@ def object(time_i, demand, zone, stations, time):
         stations_list = list(zone[zone['zone'] == z]['id'])  # 获取该区域站点的id
         length_stations = len(stations_list)  # 获取该区域站点的数量
         stations_copy = stations.copy()
-        for reset_bikes in range(50):  # 寻找可行初始解的次数
+        for reset_bikes in range(10):  # 寻找可行初始解的次数
             stop = 0
             start_demands_copy, end_demands_copy, gap_sum_copy = 0, 0, 0
             for day in range(time):

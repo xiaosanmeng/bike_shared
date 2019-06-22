@@ -30,7 +30,7 @@ def main(demand, zone, stations, day):
     best_gap, best_start_demands, best_end_demands, best_bikes, best_capacity = 10000000, 0, 0, 10000000, 10000000
     best_object = ()
     new_stations_best = new_stations.copy()
-    for time_i in range(500):
+    for time_i in range(100):
         # 加入新站点
         stations_i = pd.concat([stations, new_stations])  # 加入新站点
         zone_i = pd.concat([new_zone, zone], sort=True)  # 加入新站点
