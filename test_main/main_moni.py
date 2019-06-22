@@ -15,17 +15,19 @@ stations_i = pd.read_csv('F:/bikedata/bike_datas/station_datas.csv')[['station_i
 
 def main(demand, zone, stations, day):
     # 构建新站点
-    new_station = pd.DataFrame()
-    new_station['zone'] = zone.drop(zone[zone[['zone']].duplicated()].index, axis=0)['zone']
-    new_station['id'] = new_station['zone'].apply(lambda x: int(str(x)[::]))
-    capacity_i = new_station[['id']]
+    new_zone = pd.DataFrame()
+    new_zone['zone'] = zone.drop(zone[zone[['zone']].duplicated()].index, axis=0)['zone']
+    new_zone['id'] = new_zone['zone'].apply(lambda x: int(str(x)[::]))
+    new_stations = new_zone[['id']]
     object_list = []
-    for time_i in range(10):
-        capacity_i['capacity'] = 80
-        capacity_i['capacity'] = capacity_i['capacity'].apply(lambda x: round(x * randint(50, 100) / 100))
+    new_stations['capacity_up'] = 80
+    new_stations['capacity'] = 80
+    best_gap, best_start_demands, best_end_demands = 10000000, 0, 0
+    new_stations_best = new_stations.copy()
+    for time_i in range(200):
         # 加入新站点
-        stations_i = pd.concat([stations, capacity_i])  # 加入新站点
-        zone_i = pd.concat([new_station, zone], sort=True)  # 加入新站点
+        stations_i = pd.concat([stations, new_stations])  # 加入新站点
+        zone_i = pd.concat([new_zone, zone], sort=True)  # 加入新站点
         zone_count_stations = zone_i.groupby(['zone'])['id'].count().reset_index()  # 统计每个区域的站点数量
         demand_i = pd.merge(demand, zone_count_stations, how='left', on='zone').rename(columns={'id': 'count_stations'})
         stations_i['bikes'] = round(stations['capacity'] * 0.5)  # 设置车子数量
@@ -33,8 +35,22 @@ def main(demand, zone, stations, day):
         # stations['bikes'] = stations['capacity'].apply(lambda x: x * randint(4, 7)/10)  # 设置车子数量
         # stations['bikes'] = stations['capacity'].apply(lambda x: round(x * randint(2, 9)/10))  # 设置车子数量
         stations_i = stations_i.set_index('id')
-        t = object(time_i, demand_i, zone_i, stations_i, day)
-        object_list.append(t)
+        gap, start_demands, end_demands = object(time_i, demand_i, zone_i, stations_i, day)
+        object_list.append((gap, start_demands, end_demands))
+
+        random_num = randint(0, 100)
+        t = False
+        if best_gap > gap and best_start_demands < start_demands and best_end_demands < end_demands:
+            best_gap, best_start_demands, best_end_demands = gap, start_demands, end_demands
+            new_stations_best = new_stations.copy()
+            t = True
+        if t is False and random_num < 10:
+            new_stations['capacity'] = new_stations_best['capacity_up'].apply(lambda x: round(x * randint(70, 100) / 100))
+            t = False
+        else:
+            new_stations['capacity'] = new_stations_best['capacity'].apply(lambda x: round(x * randint(80, 110) / 100))
+
+    print(best_gap, best_start_demands, best_end_demands)
     return object_list
 
 

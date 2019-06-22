@@ -32,23 +32,25 @@ def object(time_i, demand, zone, stations, time):
         return start, end
 
     def station_init_bikes(reset_bikes, data, list, capacity_i):
-        data.loc[list, 'bikes'] = round(capacity_i * ((reset_bikes+1) / 20))  # 所有站点比例一致
-        # data.loc[list, 'bikes'] = round(capacity_i * randint(0, 100) / 100)  # 所有站点比例一致
+        # data.loc[list, 'bikes'] = round(capacity_i * ((reset_bikes+1) / 20))  # 所有站点比例一致
+        data.loc[list, 'bikes'] = round(capacity_i * randint(0, 100) / 100)  # 所有站点比例一致
         # data.loc[list, 'bikes'] = capacity_i.apply(lambda x: round(x * randint(0, 100) / 100))  # 站点比例不一致
         return data
 
     # stations['bikes'] = round(stations['capacity'] * 0.5)  # 设置车子数量
-    zone_list = demand.drop(demand[demand[['zone']].duplicated()].index, axis=0)['zone']  # 区域列
+    zone_list = demand.drop(demand[demand[['zone']].duplicated()].index, axis=0)['zone']  # 区域列表
     gap_sum, start_demand_sum, end_demands_sum = 0, 0, 0  # 统计缺口总量, 满足的借车需求量, 满足的还车需求量
+    bikes_sum = 0
     stop_list = []
     for index, z in enumerate(zone_list):
         zone_data = demand[demand['zone'] == z]  # 依此读取每个区域的数据
         stations_list = list(zone[zone['zone'] == z]['id'])  # 获取该区域站点的id
         length_stations = len(stations_list)  # 获取该区域站点的数量
         stations_copy = stations.copy()
-        for reset_bikes in range(20):  # 寻找可行初始解的次数
+        for reset_bikes in range(50):  # 寻找可行初始解的次数
             stop = 0
             start_demands_copy, end_demands_copy, gap_sum_copy = 0, 0, 0
+            bike_i = stations_copy.loc[stations_list, 'bikes'].sum()
             for day in range(time):
                 if (day+1) not in list(zone_data['day']):
                     continue
@@ -57,7 +59,7 @@ def object(time_i, demand, zone, stations, time):
                 bikes = stations_copy.loc[stations_list]['bikes']  # 获取区域内站点的车子数量
                 for time_1 in range(100):
                     # day_demand = pd.Series(day_demand)
-                    print(time_i, 'round', reset_bikes, 'day:', day + 1, 'zone:', z, "%:", index, len(zone_list), time_1)
+                    print('round1:', time_i, 'zone:', z, "%:", (index, len(zone_list)),  'round2', reset_bikes, 'day:', day + 1, time_1,)
                     start_demands, end_demands = random_start(length_stations, day_demand)
                     # start_demands = random_start(length_stations, day_demand)  # 分配区域借车量
                     # end_demands = random_end(length_stations, day_demand)  # 分配区域借车量
@@ -82,17 +84,18 @@ def object(time_i, demand, zone, stations, time):
                     end_demands_copy += end_demands
                     gap_sum_copy += sum(gap)
                     stop = 2
-            if reset_bikes == 19:
+            if reset_bikes == 49:
                 stop_list.append([index, stations_list, day])
             if stop == 2:
                 start_demand_sum += start_demands_copy
                 end_demands_sum += end_demands_copy
                 gap_sum += gap_sum_copy
+                bikes_sum += bike_i
                 stations = stations_copy
                 break
     print(stop_list)
-    print(gap_sum, start_demand_sum, end_demands_sum)
-    return (gap_sum, start_demand_sum, end_demands_sum)
+    print(gap_sum, start_demand_sum, end_demands_sum, bikes_sum)
+    return [gap_sum, start_demand_sum, end_demands_sum, bikes_sum]
 
 
 

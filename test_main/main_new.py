@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from random import randint
-from object_per_station import object
+from object_new import object
 
 # 读取区域需求量
 demand_i = pd.read_csv('F:/bikedata/bike_datas/test/zone_day.csv')
@@ -24,7 +24,7 @@ def main(demand, zone, stations, day):
     object_list = []
     new_stations['capacity_up'] = 60
     new_stations['capacity'] = 60
-    for time_i in range(50):
+    for time_i in range(20):
         # 加入新站点
         stations_i = pd.concat([stations, new_stations])  # 加入新站点
         zone_i = pd.concat([new_zone, zone], sort=True)  # 加入新站点
@@ -36,7 +36,6 @@ def main(demand, zone, stations, day):
         # stations['bikes'] = stations['capacity'].apply(lambda x: round(x * randint(2, 9)/10))  # 设置车子数量
         stations_i = stations_i.set_index('id')
         t = object(time_i, demand_i, zone_i, stations_i, day)
-        t.append(stations_i['capacity'].sum())
         object_list.append(t)
         new_stations['capacity'] = new_stations['capacity_up'].apply(lambda x: round(x * randint(40, 100) / 100))
     return object_list
@@ -46,7 +45,7 @@ z = main(demand_i, zone_i, stations_i, 5)
 print(z)
 # 容量0.4-1[(12780.0, 136985.0, 136983.0), (12548.0, 136457.0, 136403.0), (12526.0, 136457.0, 136403.0), (12631.0, 136723.0, 136588.0), (12568.0, 136457.0, 136403.0), (12536.0, 136457.0, 136403.0), (12659.0, 136719.0, 136798.0), (12556.0, 136457.0, 136403.0), (12554.0, 136457.0, 136403.0), (12637.0, 136723.0, 136588.0), (12649.0, 136723.0, 136588.0), (12635.0, 136723.0, 136588.0), (12615.0, 136723.0, 136588.0), (12544.0, 136457.0, 136403.0), (12536.0, 136457.0, 136403.0), (12635.0, 136723.0, 136588.0), (12532.0, 136457.0, 136403.0), (12568.0, 136457.0, 136403.0), (12552.0, 136457.0, 136403.0), (12544.0, 136457.0, 136403.0)]
 
-# 增加站点容量和车子数量的目标函数
+# 修改为最大满足需求量的目标函数
 
 # 开始结束需求量分配比例一致
 # 所有站点初始比例 0.5 / day5  12754.0 136985.0 136983.0/12776.0 136985.0 136983.0/12756.0 136985.0 136983.0/12746.0 136985.0 136983.0/12766.0 136985.0 136983.0
