@@ -2,6 +2,9 @@ import pandas as pd
 import numpy as np
 from random import randint
 from object_per_station import object
+import time
+import matplotlib.pyplot as plt
+
 
 # 读取区域需求量
 demand_i = pd.read_csv('F:/bikedata/bike_datas/test/zone_day.csv')
@@ -21,12 +24,13 @@ def main(demand, zone, stations, day):
     new_zone['zone'] = zone.drop(zone[zone[['zone']].duplicated()].index, axis=0)['zone']
     new_zone['id'] = new_zone['zone'].apply(lambda x: int(str(x)[::]))
     new_stations = new_zone[['id']]
-    object_list = []
+    object_list, bikes_list, capacity_list, bikes_best_list, capacity_best_list = [], [], [], [], []
     new_stations['capacity_up'] = 60
     new_stations['capacity'] = 60
     best_gap, best_start_demands, best_end_demands, best_bikes, best_capacity = 10000000, 0, 0, 10000000, 10000000
+    best_object = ()
     new_stations_best = new_stations.copy()
-    for time_i in range(3):
+    for time_i in range(500):
         # 加入新站点
         stations_i = pd.concat([stations, new_stations])  # 加入新站点
         zone_i = pd.concat([new_zone, zone], sort=True)  # 加入新站点
@@ -39,25 +43,54 @@ def main(demand, zone, stations, day):
         stations_i = stations_i.set_index('id')
         gap, start_demands, end_demands, bikes = object(time_i, demand_i, zone_i, stations_i, day)
         capacity = stations_i['capacity'].sum()
-        object_list.append((gap, start_demands, end_demands, bikes, capacity))
+        object_i = (gap, start_demands, end_demands, bikes, capacity)
+        object_list.append(object_i)
 
         random_num = randint(0, 100)
         t = False
         # if best_gap > gap and best_start_demands < start_demands and best_end_demands < end_demands:
+        #     best_gap, best_start_demands, best_end_demands = gap, start_demands, end_demands
+        #     best_object = object_i
+        #     new_stations_best = new_stations.copy()
+
         if best_bikes > bikes and best_capacity > capacity:
-            best_gap, best_start_demands, best_end_demands = gap, start_demands, end_demands
+            best_bikes, best_capacity = bikes, capacity
+            best_object = object_i
             new_stations_best = new_stations.copy()
             t = True
         if t is False and random_num < 10:
             new_stations['capacity'] = new_stations_best['capacity_up'].apply(lambda x: round(x * randint(70, 100) / 100))
-            t = False
         else:
-            new_stations['capacity'] = new_stations_best['capacity'].apply(lambda x: round(x * randint(80, 110) / 100))
-    return object_list
+            new_stations['capacity'] = new_stations_best['capacity'].apply(lambda x: round(x * randint(80, 100) / 100))
+
+        bikes_list.append(bikes)
+        capacity_list.append(capacity)
+        bikes_best_list.append(best_bikes)
+        capacity_best_list.append(best_capacity)
+    print(best_object)
+    return object_list, bikes_list, capacity_list, bikes_best_list, capacity_best_list
 
 
-z = main(demand_i, zone_i, stations_i, 5)
-print(z)
+start_time = time.time()
+object_list, bikes_list, capacity_list, bikes_best_list, capacity_best_list = main(demand_i, zone_i, stations_i, 5)
+end_time = time.time()
+print(object_list)
+print('用时：%s s' % round(start_time-end_time))
+
+
+def DrawLinechart(y1, y2, title):
+    x = range(len(y1))  # 生成0-10
+    plt.plot(x, y1, c="R", label='common')
+    plt.plot(x, y2, c='B', label='best')
+    plt.legend(loc = 'upper left')#图例的位置是左上
+    plt.xlabel('round')#X轴标签
+    plt.ylabel('value')#Y轴标签
+    plt.title(title)#折线图标题
+
+    plt.show()
+DrawLinechart(bikes_list, bikes_best_list, 'bikes')
+DrawLinechart(capacity_list, capacity_best_list, 'capacity')
+
 # 容量0.4-1[(12780.0, 136985.0, 136983.0), (12548.0, 136457.0, 136403.0), (12526.0, 136457.0, 136403.0), (12631.0, 136723.0, 136588.0), (12568.0, 136457.0, 136403.0), (12536.0, 136457.0, 136403.0), (12659.0, 136719.0, 136798.0), (12556.0, 136457.0, 136403.0), (12554.0, 136457.0, 136403.0), (12637.0, 136723.0, 136588.0), (12649.0, 136723.0, 136588.0), (12635.0, 136723.0, 136588.0), (12615.0, 136723.0, 136588.0), (12544.0, 136457.0, 136403.0), (12536.0, 136457.0, 136403.0), (12635.0, 136723.0, 136588.0), (12532.0, 136457.0, 136403.0), (12568.0, 136457.0, 136403.0), (12552.0, 136457.0, 136403.0), (12544.0, 136457.0, 136403.0)]
 
 # 增加站点容量和车子数量的目标函数

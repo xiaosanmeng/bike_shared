@@ -93,8 +93,8 @@ def object(time_i, demand, zone, stations, time):
                 bikes_sum += bike_i
                 stations = stations_copy
                 break
-    print(stop_list)
-    print(gap_sum, start_demand_sum, end_demands_sum, bikes_sum)
+    # print(stop_list)
+    # print(gap_sum, start_demand_sum, end_demands_sum, bikes_sum)
     return gap_sum, start_demand_sum, end_demands_sum, bikes_sum
 
 
