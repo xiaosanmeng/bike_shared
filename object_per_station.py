@@ -95,7 +95,7 @@ def object(time_i, demand, zone, stations, time):
                 break
     print(stop_list)
     print(gap_sum, start_demand_sum, end_demands_sum, bikes_sum)
-    return [gap_sum, start_demand_sum, end_demands_sum, bikes_sum]
+    return gap_sum, start_demand_sum, end_demands_sum, bikes_sum
 
 
 

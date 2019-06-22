@@ -24,7 +24,9 @@ def main(demand, zone, stations, day):
     object_list = []
     new_stations['capacity_up'] = 60
     new_stations['capacity'] = 60
-    for time_i in range(50):
+    best_gap, best_start_demands, best_end_demands, best_bikes, best_capacity = 10000000, 0, 0, 10000000, 10000000
+    new_stations_best = new_stations.copy()
+    for time_i in range(3):
         # 加入新站点
         stations_i = pd.concat([stations, new_stations])  # 加入新站点
         zone_i = pd.concat([new_zone, zone], sort=True)  # 加入新站点
@@ -35,10 +37,22 @@ def main(demand, zone, stations, day):
         # stations['bikes'] = stations['capacity'].apply(lambda x: x * randint(4, 7)/10)  # 设置车子数量
         # stations['bikes'] = stations['capacity'].apply(lambda x: round(x * randint(2, 9)/10))  # 设置车子数量
         stations_i = stations_i.set_index('id')
-        t = object(time_i, demand_i, zone_i, stations_i, day)
-        t.append(stations_i['capacity'].sum())
-        object_list.append(t)
-        new_stations['capacity'] = new_stations['capacity_up'].apply(lambda x: round(x * randint(40, 100) / 100))
+        gap, start_demands, end_demands, bikes = object(time_i, demand_i, zone_i, stations_i, day)
+        capacity = stations_i['capacity'].sum()
+        object_list.append((gap, start_demands, end_demands, bikes, capacity))
+
+        random_num = randint(0, 100)
+        t = False
+        # if best_gap > gap and best_start_demands < start_demands and best_end_demands < end_demands:
+        if best_bikes > bikes and best_capacity > capacity:
+            best_gap, best_start_demands, best_end_demands = gap, start_demands, end_demands
+            new_stations_best = new_stations.copy()
+            t = True
+        if t is False and random_num < 10:
+            new_stations['capacity'] = new_stations_best['capacity_up'].apply(lambda x: round(x * randint(70, 100) / 100))
+            t = False
+        else:
+            new_stations['capacity'] = new_stations_best['capacity'].apply(lambda x: round(x * randint(80, 110) / 100))
     return object_list
 
 
