@@ -38,8 +38,9 @@ def object(time_i, demand, zone, stations, time):
         return data
 
     # stations['bikes'] = round(stations['capacity'] * 0.5)  # 设置车子数量
-    zone_list = demand.drop(demand[demand[['zone']].duplicated()].index, axis=0)['zone']  # 区域列
+    zone_list = demand.drop(demand[demand[['zone']].duplicated()].index, axis=0)['zone']  # 区域列表
     gap_sum, start_demand_sum, end_demands_sum = 0, 0, 0  # 统计缺口总量, 满足的借车需求量, 满足的还车需求量
+    bikes_sum = 0
     stop_list = []
     for index, z in enumerate(zone_list):
         zone_data = demand[demand['zone'] == z]  # 依此读取每个区域的数据
@@ -49,6 +50,7 @@ def object(time_i, demand, zone, stations, time):
         for reset_bikes in range(50):  # 寻找可行初始解的次数
             stop = 0
             start_demands_copy, end_demands_copy, gap_sum_copy = 0, 0, 0
+            bike_i = stations_copy.loc[stations_list, 'bikes'].sum()
             for day in range(time):
                 if (day+1) not in list(zone_data['day']):
                     continue
@@ -88,11 +90,12 @@ def object(time_i, demand, zone, stations, time):
                 start_demand_sum += start_demands_copy
                 end_demands_sum += end_demands_copy
                 gap_sum += gap_sum_copy
+                bikes_sum += bike_i
                 stations = stations_copy
                 break
-    # print(stop_list)
-    # print(gap_sum, start_demand_sum, end_demands_sum)
-    return gap_sum, start_demand_sum, end_demands_sum
+    print(stop_list)
+    print(gap_sum, start_demand_sum, end_demands_sum, bikes_sum)
+    return [gap_sum, start_demand_sum, end_demands_sum, bikes_sum]
 
 
 
