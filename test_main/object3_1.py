@@ -23,8 +23,8 @@ def object(time_i, demand, zone, stations, time):
         points = [randint(0, 100) for i in range(length - 1)]  # 生成几个随机点
         points = [0] + sorted(points) + [100]  # 排个队
         points = [(points[i + 1] - points[i]) / 100 for i in range(length - 1)]
-        start_demand = demands_i['start'][0] * (1 - rate/len_rate)
-        end_demand = demands_i['end'][0] * (1 - rate/len_rate)
+        start_demand = round(demands_i['start'][0] * (1 - rate/len_rate))
+        end_demand = round(demands_i['end'][0] * (1 - rate/len_rate))
         start = [round(points[i] * start_demand) for i in range(length - 1)]
         end = [round(points[i] * end_demand) for i in range(length - 1)]
         start.append(start_demand - sum(start))
@@ -83,7 +83,7 @@ def object(time_i, demand, zone, stations, time):
                     end_demands_copy += end_demands
                     gap_sum_copy += sum(gap)
                     stop = 2
-            if reset_demands == (round2 - 1) :
+            if reset_demands == (round2 - 1):
                 stop_list.append([index, stations_list, day])
             if stop == 2:
                 start_demand_sum += start_demands_copy

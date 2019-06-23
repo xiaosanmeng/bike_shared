@@ -30,7 +30,7 @@ def main(demand, zone, stations, day):
         zone_i = pd.concat([new_zone, zone], sort=True)  # 加入新站点
         zone_count_stations = zone_i.groupby(['zone'])['id'].count().reset_index()  # 统计每个区域的站点数量
         demand_i = pd.merge(demand, zone_count_stations, how='left', on='zone').rename(columns={'id': 'count_stations'})
-        stations_i['bikes'] = round(stations['capacity'] * 0.5)  # 设置车子数量
+        stations_i['bikes'] = round(stations_i['capacity'] * 0.5)  # 设置车子数量
         # stations['bikes'] = round(stations['capacity'] * 0.6)  # 设置车子数量
         # stations['bikes'] = stations['capacity'].apply(lambda x: x * randint(4, 7)/10)  # 设置车子数量
         # stations['bikes'] = stations['capacity'].apply(lambda x: round(x * randint(2, 9)/10))  # 设置车子数量
