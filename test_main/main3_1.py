@@ -39,7 +39,7 @@ def main(demand, zone, stations, day):
     stations_i = stations_i.set_index('id')
 
 
-    for time_i in range(20):
+    for time_i in range(1):
         # 加入新站点
         # stations_i['bikes'] = round(stations_i['capacity'] * 0.6)  # 设置车子数量
         # stations_i['bikes'] = stations_i['capacity'].apply(lambda x: x * randint(4, 7)/10)  # 设置车子数量
@@ -66,6 +66,7 @@ def main(demand, zone, stations, day):
         else:
             stations_i['bikes'] = new_stations_best['bikes'].apply(lambda x: round(x * randint(90, 110) / 100))
         print(best_object)
+    new_stations_best.to_csv('./best_stations.csv', index=None)
     return object_list
 
 start_time = time.time()

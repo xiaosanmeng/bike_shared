@@ -29,21 +29,20 @@ def main(demand, zone, stations, day):
     # 新站点分割线
     object_list = []
     best_gap, best_start_demands, best_end_demands, best_bikes, best_capacity = 10000000, 0, 0, 10000000, 10000000
-    best_object = ()
+    best_object, best_stations = (), pd.DataFrame()
     new_stations_best = new_stations.copy()
     stations_i = pd.concat([stations, new_stations])  # 加入新站点
     zone_i = pd.concat([new_zone, zone], sort=True)  # 加入新站点
     zone_count_stations = zone_i.groupby(['zone'])['id'].count().reset_index()  # 统计每个区域的站点数量
     demand_i = pd.merge(demand, zone_count_stations, how='left', on='zone').rename(columns={'id': 'count_stations'})
     stations_i['bikes'] = round(stations_i['capacity'] * 0.5)  # 设置车子数量
+    # stations_i['bikes'] = round(stations_i['capacity'] * 0.6)  # 设置车子数量
+    # stations_i['bikes'] = stations_i['capacity'].apply(lambda x: x * randint(4, 7)/10)  # 设置车子数量
+    # stations_i['bikes'] = stations_i['capacity'].apply(lambda x: round(x * randint(2, 9)/10))  # 设置车子数量
     stations_i = stations_i.set_index('id')
 
 
     for time_i in range(20):
-        # 加入新站点
-        # stations_i['bikes'] = round(stations_i['capacity'] * 0.6)  # 设置车子数量
-        # stations_i['bikes'] = stations_i['capacity'].apply(lambda x: x * randint(4, 7)/10)  # 设置车子数量
-        # stations_i['bikes'] = stations_i['capacity'].apply(lambda x: round(x * randint(2, 9)/10))  # 设置车子数量
         gap, start_demands, end_demands = object(time_i, demand_i, zone_i, stations_i, day)
         object_i = (gap, start_demands, end_demands)
         object_list.append(object_i)
@@ -66,6 +65,7 @@ def main(demand, zone, stations, day):
         else:
             stations_i['bikes'] = new_stations_best['bikes'].apply(lambda x: round(x * randint(90, 110) / 100))
         print(best_object)
+    new_stations_best.to_csv('./best_stations.csv', index=None)
     return object_list
 
 start_time = time.time()
