@@ -25,8 +25,8 @@ def main(demand, zone, stations, day):
     new_zone['id'] = new_zone['zone'].apply(lambda x: int(str(x)[::]))
     new_stations = new_zone[['id']]
     object_list, bikes_list, capacity_list, bikes_best_list, capacity_best_list = [], [], [], [], []
-    new_stations['capacity_up'] = 60
-    new_stations['capacity'] = 60
+    new_stations['capacity_up'] = 80
+    new_stations['capacity'] = 80
     best_gap, best_start_demands, best_end_demands, best_bikes, best_capacity = 10000000, 0, 0, 10000000, 10000000
     best_object = ()
     new_stations_best = new_stations.copy()
@@ -75,7 +75,7 @@ start_time = time.time()
 object_list, bikes_list, capacity_list, bikes_best_list, capacity_best_list = main(demand_i, zone_i, stations_i, 5)
 end_time = time.time()
 print(object_list)
-print('用时：%s s' % round(start_time-end_time))
+print('用时：%s s' % round(end_time - start_time))
 
 
 def DrawLinechart(y1, y2, title):
@@ -88,7 +88,7 @@ def DrawLinechart(y1, y2, title):
     plt.title(title)#折线图标题
 
     plt.show()
-DrawLinechart(bikes_list, bikes_best_list, 'bikes')
+# DrawLinechart(bikes_list, bikes_best_list, 'bikes')
 DrawLinechart(capacity_list, capacity_best_list, 'capacity')
 
 # 容量0.4-1[(12780.0, 136985.0, 136983.0), (12548.0, 136457.0, 136403.0), (12526.0, 136457.0, 136403.0), (12631.0, 136723.0, 136588.0), (12568.0, 136457.0, 136403.0), (12536.0, 136457.0, 136403.0), (12659.0, 136719.0, 136798.0), (12556.0, 136457.0, 136403.0), (12554.0, 136457.0, 136403.0), (12637.0, 136723.0, 136588.0), (12649.0, 136723.0, 136588.0), (12635.0, 136723.0, 136588.0), (12615.0, 136723.0, 136588.0), (12544.0, 136457.0, 136403.0), (12536.0, 136457.0, 136403.0), (12635.0, 136723.0, 136588.0), (12532.0, 136457.0, 136403.0), (12568.0, 136457.0, 136403.0), (12552.0, 136457.0, 136403.0), (12544.0, 136457.0, 136403.0)]
