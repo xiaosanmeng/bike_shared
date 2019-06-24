@@ -2,6 +2,15 @@ import pandas as pd
 
 cb = pd.DataFrame(pd.read_csv('F:/bikedata/citi/201903-citibike-tripdata.csv', parse_dates=['starttime']))
 cb['day'] = cb['starttime'].apply(lambda x: x.day)
+cb_i = cb[['start station id', 'end station id', 'day']]\
+    .rename(columns={'start station id': 'start', 'end station id': 'end'})
+stations_i = pd.DataFrame()
+stations_i['id'], stations_i['true'] = list(set(list(cb_i['start'])) & set(list(cb_i['end']))), 1
+cb_i = pd.merge(cb_i, stations_i.rename(columns={'id': 'start'}), how='left', on='start')
+cb_i = pd.merge(cb_i, stations_i.rename(columns={'id': 'end', 'true': 'true1'}), how='left', on='end')
+cb_i = cb_i[(cb_i['true'] == 1) & (cb_i['true1'] == 1)][['start', 'end', 'day']].reset_index(drop=True)
+cb_i.to_csv('./stations_day_demands.csv', index=None)
+
 # 统计站点每天的借还需求量
 start_count = cb.groupby(['start station id', 'day']) \
     .count().reset_index().rename(columns={'start station id': 'id', 'starttime': 'start'})[['id', 'day', 'start']]
