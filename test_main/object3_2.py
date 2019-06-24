@@ -47,19 +47,18 @@ def object(time_i, demand, zone, stations, time):
         length_stations = len(stations_list)  # 获取该区域站点的数量
         stations_copy = stations.copy()
         round2 = 20
+        for reset_demands in range(round2):  # 寻找可行初始解的次数
             stop = 0
-        for day in range(time):
-            if (day + 1) not in list(zone_data['day']):
-                continue
             start_demands_copy, end_demands_copy, gap_sum_copy = 0, 0, 0
-            for reset_demands in range(round2):  # 寻找可行初始解的次数
-                stop = 0
+            for day in range(time):
+                if (day+1) not in list(zone_data['day']):
+                    continue
                 day_demand = zone_data[zone_data['day'] == (day+1)].reset_index(drop=True)
                 capacity = stations_copy.loc[stations_list]['capacity']  # 获取区域内站点的容量
                 bikes = stations_copy.loc[stations_list]['bikes']  # 获取区域内站点的车子数量
                 for time_1 in range(100):
                     # day_demand = pd.Series(day_demand)
-                    print('round1:', time_i, 'zone:', z, "%:", (index, len(zone_list)), 'day:', day + 1,  'round2', reset_demands, time_1,)
+                    print('round1:', time_i, 'zone:', z, "%:", (index, len(zone_list)),  'round2', reset_demands, 'day:', day + 1, time_1,)
                     start_demands, end_demands = random_start(length_stations, day_demand, reset_demands, round2)
                     # start_demands = random_start(length_stations, day_demand)  # 分配区域借车量
                     # end_demands = random_end(length_stations, day_demand)  # 分配区域借车量
@@ -71,9 +70,9 @@ def object(time_i, demand, zone, stations, time):
                     elif time_1 == 99:
                         stop = 1
                 if stop == 1:
-                    # stations_copy = stations.copy()
+                    stations_copy = stations.copy()
                     # stations_copy = station_init_bikes(reset_bikes, stations_copy, stations_list, capacity)
-                    continue
+                    break
                 else:
                     gap = [end_demands[i] - start_demands[i] for i in range(length_stations)]
                     stations_copy.loc[stations_list, 'bikes'] = bikes + gap
@@ -84,7 +83,6 @@ def object(time_i, demand, zone, stations, time):
                     end_demands_copy += end_demands
                     gap_sum_copy += sum(gap)
                     stop = 2
-                    break
             if reset_demands == (round2 - 1):
                 stop_list.append([index, stations_list, day])
             if stop == 2:
@@ -92,16 +90,7 @@ def object(time_i, demand, zone, stations, time):
                 end_demands_sum += end_demands_copy
                 gap_sum += gap_sum_copy
                 stations = stations_copy
+                break
     # print(stop_list)
     # print(gap_sum, start_demand_sum, end_demands_sum)
     return gap_sum, start_demand_sum, end_demands_sum
-
-
-
-
-
-
-
-
-
-

@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from random import randint
-from object3_1 import object
+from object3_2 import object
 import time
 
 # 读取区域需求量
@@ -42,7 +42,7 @@ def main(demand, zone, stations, day):
     stations_i = stations_i.set_index('id')
 
 
-    for time_i in range(20):
+    for time_i in range(1):
         gap, start_demands, end_demands = object(time_i, demand_i, zone_i, stations_i, day)
         object_i = (gap, start_demands, end_demands)
         object_list.append(object_i)
