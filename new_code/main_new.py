@@ -1,18 +1,19 @@
 import pandas as pd
 import numpy as np
 from random import randint
-from object3_2 import object
+from object_new import object
 import time
 
 # 读取区域需求量
-demand_i = pd.read_csv('E:/python/shared_bikes/main_code/datas/zone_demands_day.csv')
+# demand_i = pd.read_csv('E:/python/shared_bikes/main_code/datas/zone_demands_day.csv')
+demand_i = pd.read_csv('E:/python/shared_bikes/main_code/datas/zone_demands_day_new.csv')
 # 读取区域包含的站点信息
 zone_i = pd.read_csv('E:/python/shared_bikes/main_code/datas/station_datas.csv').rename(
     columns={'station_id': 'id', 'zone_id': 'zone'})[['id', 'zone']]
 # 读取站点信息
 stations_i = pd.read_csv('E:/python/shared_bikes/main_code/datas/station_datas.csv')[['station_id', 'capacity']].\
     rename(columns={'station_id': 'id'})
-
+### t = demand_i.groupby(['start', 'end']).count().reset_index()
 
 def main(demand, zone, stations, day):
     # 构建新站点
@@ -32,14 +33,13 @@ def main(demand, zone, stations, day):
     stations_i = pd.concat([stations, new_stations])  # 加入新站点
     zone_i = pd.concat([new_zone, zone], sort=True)  # 加入新站点
     zone_count_stations = zone_i.groupby(['zone'])['id'].count().reset_index()  # 统计每个区域的站点数量
-    demand_i = pd.merge(demand, zone_count_stations, how='left', on='zone').rename(columns={'id': 'count_stations'})
+    demand_i = demand
+    # demand_i = pd.merge(demand, zone_count_stations, how='left', on='zone').rename(columns={'id': 'count_stations'})
     stations_i['bikes'] = round(stations_i['capacity'] * 0.5)  # 设置车子数量
     # stations_i['bikes'] = round(stations_i['capacity'] * 0.6)  # 设置车子数量
     # stations_i['bikes'] = stations_i['capacity'].apply(lambda x: x * randint(4, 7)/10)  # 设置车子数量
     # stations_i['bikes'] = stations_i['capacity'].apply(lambda x: round(x * randint(2, 9)/10))  # 设置车子数量
     stations_i = stations_i.set_index('id')
-
-
     for time_i in range(1):
         gap, start_demands, end_demands = object(time_i, demand_i, zone_i, stations_i, day)
         object_i = (gap, start_demands, end_demands)
@@ -67,7 +67,7 @@ def main(demand, zone, stations, day):
     return object_list
 
 start_time = time.time()
-z = main(demand_i, zone_i, stations_i, 31)
+z = main(demand_i, zone_i, stations_i, 1)
 end_time = time.time()
 print(z)
 print('用时：%s s' % round(end_time - start_time))

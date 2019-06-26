@@ -20,7 +20,31 @@ zone_demands = pd.merge(zone_demands, zone.rename(columns={'id': 'end'}), how='l
     .rename(columns={'zone': 'end zone'})
 zone_demands = zone_demands[['start zone', 'end zone', 'day']]\
     .rename(columns={'start zone': 'start', 'end zone': 'end'})
-zone_demands.to_csv('E:/python/shared_bikes/main_code/datas/zone_demands_day.csv', index=None)
+# zone_demands.to_csv('E:/python/shared_bikes/main_code/datas/zone_demands_day.csv', index=None)
+
+# 按天统计
+zone_demands_i = pd.DataFrame()
+for day in range(31):
+    print(day)
+    day_demands = zone_demands[zone_demands['day'] == day + 1]
+    day_demands = day_demands.groupby(['start', 'end']).count().reset_index().rename(columns={'day': 'demands'})
+    day_demands['day'] = day + 1
+    zone_demands_i = pd.concat([zone_demands_i, day_demands])
+zone_demands = zone_demands_i.reset_index(drop=True)
+zone_demands['t'] = 0
+zone_demands.t[zone_demands.start == zone_demands.end] = 1
+zone_demands = zone_demands[zone_demands['t'] == 0]
+del zone_demands['t']
+zone_demands.to_csv('E:/python/shared_bikes/main_code/datas/zone_demands_day_new.csv', index=None)
+
+
+
+
+
+
+
+
+
 
 
 # 统计站点每天的借还需求量

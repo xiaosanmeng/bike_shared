@@ -19,17 +19,7 @@ def object(time_i, demand, zone, stations, time):
     #     end = [round(points[i] * end_demand) for i in range(length - 1)]
     #     end.append(end_demand - sum(end))
     #     return end
-    def random_start(length, demands_i, rate, len_rate):
-        points = [randint(0, 100) for i in range(length - 1)]  # 生成几个随机点
-        points = [0] + sorted(points) + [100]  # 排个队
-        points = [(points[i + 1] - points[i]) / 100 for i in range(length - 1)]
-        start_demand = round(demands_i['start'][0] * (1 - rate/len_rate))
-        end_demand = round(demands_i['end'][0] * (1 - rate/len_rate))
-        start = [round(points[i] * start_demand) for i in range(length - 1)]
-        end = [round(points[i] * end_demand) for i in range(length - 1)]
-        start.append(start_demand - sum(start))
-        end.append(end_demand - sum(end))
-        return start, end
+
 
     def station_init_bikes(reset_bikes, data, list, capacity_i):
         # data.loc[list, 'bikes'] = round(capacity_i * ((reset_bikes+1) / 20))  # 所有站点比例一致
