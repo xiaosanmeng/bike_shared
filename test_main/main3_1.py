@@ -41,7 +41,7 @@ def main(demand, zone, stations, day):
     stations_i = stations_i.set_index('id')
 
 
-    for time_i in range(200):
+    for time_i in range(1):
         # 加入新站点
         # stations_i['bikes'] = round(stations_i['capacity'] * 0.6)  # 设置车子数量
         # stations_i['bikes'] = stations_i['capacity'].apply(lambda x: x * randint(4, 7)/10)  # 设置车子数量

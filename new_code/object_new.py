@@ -35,7 +35,7 @@ def object(time_i, demand, zone, stations, time1):
         demand_distribution.append(demand - sum(demand_distribution))
         return demand_distribution
 
-    def demands_distribution(start, end, demand, stations, rate, day, zone_index, sum_index, sum_demands):  # stations 稍后试一下精简代码，速度是否有提升
+    def demands_distribution_rate(start, end, demand, stations, rate, day, zone_index, sum_index, sum_demands, time1):  # stations 稍后试一下精简代码，速度是否有提升
         judge = 0
         end_empty = stations.loc[end['id']]['capacity'] - stations.loc[end['id']]['bikes'] # 获取区域内站点的容量
         start_bikes = stations.loc[start['id']]['bikes']  # 获取区域内站点的车子数量
@@ -43,7 +43,7 @@ def object(time_i, demand, zone, stations, time1):
             demand_i = demand * (1 - i/rate)
             if demand_i < start_bikes.sum() and demand_i < end_empty.sum():
                 for j in range(100):
-                    print(day, zone_index, sum_index, i, j)
+                    print(time1, day, zone_index, sum_index, i, j)
                     start_demand = random_distribution(start['id'], demand_i)
                     end_demand = random_distribution(end['id'], demand_i)
                     if (start_demand <= start_bikes).all() and (end_demand <= end_empty).all():
@@ -56,30 +56,56 @@ def object(time_i, demand, zone, stations, time1):
                 break
         return judge, stations, sum_demands
 
+    def demands_distribution(start, end, demand, stations, rate, day, zone_index, sum_index, sum_demands, time1):  # stations 稍后试一下精简代码，速度是否有提升
+        judge = 0
+        end_empty = stations.loc[end['id']]['capacity'] - stations.loc[end['id']]['bikes'] # 获取区域内站点的容量
+        start_bikes = stations.loc[start['id']]['bikes']  # 获取区域内站点的车子数量
+        demand_i = demand
+        if demand_i < start_bikes.sum() and demand_i < end_empty.sum():
+            for j in range(100):
+                print(time1, day, zone_index, sum_index, j)
+                start_demand = random_distribution(start['id'], demand_i)
+                end_demand = random_distribution(end['id'], demand_i)
+                if (start_demand <= start_bikes).all() and (end_demand <= end_empty).all():
+                    stations.loc[start['id'], 'bikes'] -= start_demand
+                    stations.loc[end['id'], 'bikes'] += end_demand
+                    sum_demands += demand_i
+                    judge = 1
+                    break
+        return judge, stations, sum_demands
+
+
     demand_sum = 0
     t1, t2, t3, t4, t5, t6 = 0, 0, 0, 0, 0, 0
     t11 = time()
     demand['T'] = 0
     for day in range(time1):
         day = day + 1
-        day_demand = demand[demand['day'] == day]
+        day_demand = demand[demand['day'] == day].reset_index()
         # day_demand = day_demand.groupby(['start', 'end']).count().reset_index().rename(columns={'day': 'count'})
         len_data = len(day_demand)
-        for time1 in range(3):
+        z = 5
+        for time1 in range(z):
             for data_index in range(len_data):
-                # print(data_index, len_data)
                 demand_i = day_demand.loc[data_index]
                 if demand_i['T'] == 1:
                     continue
                 start_zone, end_zone = zone[zone['zone'] == demand_i['start']], zone[zone['zone'] == demand_i['end']]
                 zone_demand = demand_i['demands']
-                judge, stations, demand_sum = demands_distribution(start_zone, end_zone, zone_demand, stations, 10, day,
-                                                                   data_index, len_data, demand_sum)
+                if time1 < z - 1:
+                    judge, stations, demand_sum = demands_distribution(start_zone, end_zone, zone_demand, stations, 10,
+                                                                       day, data_index, len_data, demand_sum, time1)
+                else:
+                    judge, stations, demand_sum = demands_distribution_rate(start_zone, end_zone, zone_demand, stations, 10,
+                                                                       day, data_index, len_data, demand_sum, time1)
                 if judge == 1:
                     day_demand.loc[data_index, 'T'] = 1
     t12 = time()
     t1 = t12-t11
     print('用时', t1, '需求量', demand_sum)
+
+# 3轮 用时 591.881649017334 需求量 27167.4
+# 用时 785.3199377059937 需求量 27252.89999999996
 
 
 

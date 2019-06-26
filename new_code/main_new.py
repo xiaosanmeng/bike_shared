@@ -63,7 +63,7 @@ def main(demand, zone, stations, day):
         else:
             stations_i['bikes'] = new_stations_best['bikes'].apply(lambda x: round(x * randint(90, 110) / 100))
         print(best_object)
-    new_stations_best.to_csv('./best_stations.csv', index=None)
+    # new_stations_best.to_csv('./best_stations.csv', index=None)
     return object_list
 
 start_time = time.time()
