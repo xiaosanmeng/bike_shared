@@ -84,7 +84,7 @@ def object(time_i, demand, zone, stations, time1):
         day_demand = demand[demand['day'] == day].reset_index()
         # day_demand = day_demand.groupby(['start', 'end']).count().reset_index().rename(columns={'day': 'count'})
         len_data = len(day_demand)
-        z = 5
+        z = 3
         for time1 in range(z):
             for data_index in range(len_data):
                 demand_i = day_demand.loc[data_index]
@@ -105,7 +105,10 @@ def object(time_i, demand, zone, stations, time1):
     print('用时', t1, '需求量', demand_sum)
 
 # 3轮 用时 591.881649017334 需求量 27167.4
-# 用时 785.3199377059937 需求量 27252.89999999996
+
+
+# 1day 3轮 改进 用时 214.2834153175354 需求量 26719.09999999998
+# 1day 5轮  改进  用时 217.05726027488708 需求量 28816.900000000005
 
 
 

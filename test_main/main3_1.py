@@ -16,18 +16,20 @@ stations_i = pd.read_csv('F:/bikedata/bike_datas/station_datas.csv')[['station_i
     rename(columns={'station_id': 'id'})
 # demand_i['start'] = round(demand_i['start'] * 0.5)
 # demand_i['end'] = round(demand_i['end'] * 0.5)
-
+# t = pd.merge(stations_i, zone_i, how='left', on='id')
+# t = t.groupby('zone')['capacity'].sum().reset_index()
+# t = pd.merge(demand_i, t, how='left', on='zone')
 
 def main(demand, zone, stations, day):
     # 构建新站点
     new_zone = pd.DataFrame()
     new_stations = pd.DataFrame()
     # 新站点构建
-    new_zone['zone'] = zone.drop(zone[zone[['zone']].duplicated()].index, axis=0)['zone']
-    new_zone['id'] = new_zone['zone'].apply(lambda x: int(str(x)[::]))
-    new_stations['id'] = new_zone['id']
-    new_stations['capacity_up'] = 60
-    new_stations['capacity'] = 60
+    # new_zone['zone'] = zone.drop(zone[zone[['zone']].duplicated()].index, axis=0)['zone']
+    # new_zone['id'] = new_zone['zone'].apply(lambda x: int(str(x)[::]))
+    # new_stations['id'] = new_zone['id']
+    # new_stations['capacity_up'] = 60
+    # new_stations['capacity'] = 60
     # 新站点分割线
     object_list, bikes_list, capacity_list, bikes_best_list, capacity_best_list = [], [], [], [], []
     best_gap, best_start_demands, best_end_demands, best_bikes, best_capacity = 10000000, 0, 0, 10000000, 10000000
@@ -74,26 +76,30 @@ def main(demand, zone, stations, day):
     # new_stations_best.to_csv('./best_stations.csv', index=None)
     return object_list, bikes_list, bikes_best_list
 
-start_time = time.time()
-object_list, bikes_list, bikes_best_list = main(demand_i, zone_i, stations_i, 10)
-end_time = time.time()
-print(object_list)
-print('用时：%s s' % round(end_time - start_time))
-print('原站点求可以满足的最大需求量10d,100轮')
-# print('原站点求可以满足的最大需求量')
 
-def DrawLinechart(y1, y2, title):
-    x = range(len(y1))  # 生成0-10
-    plt.plot(x, y1, c="R", label='common')
-    plt.plot(x, y2, c='B', label='best')
-    plt.legend(loc='upper left')#图例的位置是左上
-    plt.xlabel('round')#X轴标签
-    plt.ylabel('value')#Y轴标签
-    plt.title(title)#折线图标题
+if __name__ == "__main__":
+    start_time = time.time()
+    object_list, bikes_list, bikes_best_list = main(demand_i, zone_i, stations_i, 1)
+    end_time = time.time()
+    print(object_list)
+    print('用时：%s s' % round(end_time - start_time))
+    print('原站点求可以满足的最大需求量10d,100轮')
 
-    plt.show()
-# DrawLinechart(bikes_list, bikes_best_list, 'bikes')
-DrawLinechart(bikes_list, bikes_best_list, 'bikes')
+    def DrawLinechart(y1, y2, title):
+        x = range(len(y1))  # 生成0-10
+        plt.plot(x, y1, c="R", label='common')
+        plt.plot(x, y2, c='B', label='best')
+        plt.legend(loc='upper left')  # 图例的位置是左上
+        plt.xlabel('round')  # X轴标签
+        plt.ylabel('value')  # Y轴标签
+        plt.title(title)  # 折线图标题
+
+        plt.show()
+
+
+    # DrawLinechart(bikes_list, bikes_best_list, 'bikes')
+    DrawLinechart(bikes_list, bikes_best_list, 'bikes')
+
 
 # 在容量固定的情况下，看可以满足的最大需求量
 
