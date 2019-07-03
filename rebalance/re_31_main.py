@@ -16,36 +16,7 @@ stations_i = pd.read_csv('F:/bikedata/bike_datas/station_datas.csv')[['station_i
     rename(columns={'station_id': 'id'})
 # demand_i['start'] = round(demand_i['start'] * 0.5)
 # demand_i['end'] = round(demand_i['end'] * 0.5)
-demand_i['gap'] = demand_i['end'] - demand_i['start']
-t = pd.merge(stations_i, zone_i, how='left', on='id')
-t = t.groupby('zone')['capacity'].sum().reset_index()
-t1 = demand_i[demand_i['day'] <= 31].groupby('zone')['gap'].sum().reset_index()
 
-# t1 = demand_i[(demand_i['day'] <= 31) & (demand_i['day'] >= 30)].groupby('zone')['gap'].sum().reset_index()
-t1 = pd.merge(t1, t, how='left', on='zone')
-t1['judge'] = t1['capacity'] - abs(t1['gap'])
-z = t1[t1['judge'] < 0]
-print(len(z))
-
-# 统计不同总时段的问题区域数量
-mean_day_list = []
-for j in range(30):
-    time_interval = j + 1
-    day_list = []
-    for i in range(31 - time_interval):
-        t1 = demand_i[(demand_i['day'] <= i + time_interval + 1) & (demand_i['day'] >= i + 1)].groupby('zone')[
-            'gap'].sum().reset_index()
-        t1 = pd.merge(t1, t, how='left', on='zone')
-        t1['judge'] = t1['capacity'] - abs(t1['gap'])
-        z = t1[t1['judge'] < 0]
-        day_list.append(len(z))
-    mean_day = sum(day_list) / (31 - time_interval)
-    mean_day_list.append(('time_interval%s' % time_interval, mean_day))
-
-
-
-# t = pd.merge(demand_i, t, how='left', on='zone')
-#
 
 def main(demand, zone, stations, day):
     # 构建新站点
@@ -65,6 +36,10 @@ def main(demand, zone, stations, day):
     stations_i = pd.concat([stations, new_stations])  # 加入新站点
     zone_i = pd.concat([new_zone, zone], sort=True)  # 加入新站点
     zone_count_stations = zone_i.groupby(['zone'])['id'].count().reset_index()  # 统计每个区域的站点数量
+    t = pd.merge(stations_i, zone_i, how='left', on='id')
+    t = t.groupby('zone')['capacity'].sum().reset_index()
+    demand = pd.merge(demand, t, how='left', on='zone')
+    demand['down'], demand['up'] = 0, demand['capacity'].copy()
     demand_i = pd.merge(demand, zone_count_stations, how='left', on='zone').rename(columns={'id': 'count_stations'})
     stations_i['bikes'] = round(stations_i['capacity'] * 0.5)  # 设置车子数量
     stations_i = stations_i.set_index('id')
@@ -106,7 +81,7 @@ def main(demand, zone, stations, day):
 
 if __name__ == "__main__":
     start_time = time.time()
-    object_list, bikes_list, bikes_best_list = main(demand_i, zone_i, stations_i, 1)
+    object_list, bikes_list, bikes_best_list = main(demand_i, zone_i, stations_i, 5)
     end_time = time.time()
     print(object_list)
     print('用时：%s s' % round(end_time - start_time))
