@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from random import randint
-from object3_1 import object
+from re_31_object import object
 import time
 import matplotlib.pyplot as plt
 
@@ -23,69 +23,81 @@ def main(demand, zone, stations, day):
     new_zone = pd.DataFrame()
     new_stations = pd.DataFrame()
     # 新站点构建
-    # new_zone['zone'] = zone.drop(zone[zone[['zone']].duplicated()].index, axis=0)['zone']
-    # new_zone['id'] = new_zone['zone'].apply(lambda x: int(str(x)[::]))
-    # new_stations['id'] = new_zone['id']
-    # new_stations['capacity_up'] = 60
-    # new_stations['capacity'] = 60
+    new_zone['zone'] = zone.drop(zone[zone[['zone']].duplicated()].index, axis=0)['zone']
+    new_zone['id'] = new_zone['zone'].apply(lambda x: int(str(x)[::]))
+    new_stations['id'] = new_zone['id']
+    new_stations['capacity_up'] = 60
+    new_stations['capacity'] = 60
     # 新站点分割线
-    object_list, bikes_list, capacity_list, bikes_best_list, capacity_best_list = [], [], [], [], []
-    best_gap, best_start_demands, best_end_demands, best_bikes, best_capacity = 10000000, 0, 0, 10000000, 10000000
-    best_object = ()
-    new_stations_best = new_stations.copy()
+    # object_list, bikes_list, capacity_list, bikes_best_list, capacity_best_list = [], [], [], [], []
+    # best_gap, best_start_demands, best_end_demands, best_bikes, best_capacity = 10000000, 0, 0, 10000000, 10000000
+    # best_object = ()
+    # new_stations_best = new_stations.copy()
     stations_i = pd.concat([stations, new_stations])  # 加入新站点
     zone_i = pd.concat([new_zone, zone], sort=True)  # 加入新站点
     zone_count_stations = zone_i.groupby(['zone'])['id'].count().reset_index()  # 统计每个区域的站点数量
-    t = pd.merge(stations_i, zone_i, how='left', on='id')
-    t = t.groupby('zone')['capacity'].sum().reset_index()
-    demand = pd.merge(demand, t, how='left', on='zone')
-    demand['down'], demand['up'] = 0, demand['capacity'].copy()
-    demand_i = pd.merge(demand, zone_count_stations, how='left', on='zone').rename(columns={'id': 'count_stations'})
-    stations_i['bikes'] = round(stations_i['capacity'] * 0.5)  # 设置车子数量
+
+    # 设置区域的初始车辆上下限
+    zone_data_i = pd.merge(stations_i, zone_i, how='left', on='id')
+    zone_data_i = zone_data_i.groupby('zone')['capacity'].sum().reset_index()
+    zone_data_i['bikes'] = round(zone_data_i['capacity'] * 0.5)
+    # zone_data_i['bikes'] = zone_data_i['capacity'].apply(lambda x: round(x * randint(4, 7)/10))  # 设置车子数量
+
+    # demand = pd.merge(demand, zone_data, how='left', on='zone')
+    # demand['gap_down'], demand['gap_up'] = 0, 0
+    # demand['down'], demand['up'] = 0, demand['capacity'].copy()
+    demand['gap'] = demand['end'] - demand['start']
+    # demand['gap_sum'] = 0
+    # demand['judge'] = 0
+
+    # demand_i = pd.merge(demand, zone_count_stations, how='left', on='zone').rename(columns={'id': 'count_stations'})
+    # stations_i['bikes'] = round(stations_i['capacity'] * 0.5)  # 设置车子数量
     stations_i = stations_i.set_index('id')
+    y1 = []
+    y2 = []
 
-
-    for time_i in range(1):
+    re_bikes = 1000000
+    for time_i in range(100):
         # 加入新站点
         # stations_i['bikes'] = round(stations_i['capacity'] * 0.6)  # 设置车子数量
         # stations_i['bikes'] = stations_i['capacity'].apply(lambda x: x * randint(4, 7)/10)  # 设置车子数量
         # stations_i['bikes'] = stations_i['capacity'].apply(lambda x: round(x * randint(2, 9)/10))  # 设置车子数量
-        gap, start_demands, end_demands = object(time_i, demand_i, zone_i, stations_i, day)
-        bikes = stations_i['bikes'].sum()
-        object_i = (gap, start_demands, end_demands, bikes)
-        object_list.append(object_i)
-        # 加入算法
-        random_num = randint(0, 100)
-        t = False
-        if best_start_demands < start_demands or best_end_demands < end_demands:
-            best_gap, best_start_demands, best_end_demands, best_bikes = gap, start_demands, end_demands, bikes
-            best_object = object_i
-            new_stations_best = stations_i.copy()
-            t = True
-
-        # if best_bikes > bikes and best_capacity > capacity:
-        #     best_bikes, best_capacity = bikes, capacity
+        zone_data, re_bikes_i = object(time_i, demand_i, zone_i, stations_i, zone_data_i, day)
+        # random_num = randint(0, 100)
+        # t = False
+        # if best_start_demands < start_demands or best_end_demands < end_demands:
+        #     best_gap, best_start_demands, best_end_demands, best_bikes = gap, start_demands, end_demands, bikes
         #     best_object = object_i
-        #     new_stations_best = new_stations.copy()
+        #     new_stations_best = stations_i.copy()
         #     t = True
-        if t is False and random_num <= 10:
-            stations_i['bikes'] = stations_i['capacity'].apply(lambda x: round(x * randint(0, 100) / 100))
-        else:
-            stations_i['bikes'] = new_stations_best['bikes'].apply(lambda x: round(x * randint(80, 120) / 100))
-        print(best_object)
-        bikes_list.append(bikes)
-        bikes_best_list.append(best_bikes)
-    # new_stations_best.to_csv('./best_stations.csv', index=None)
-    return object_list, bikes_list, bikes_best_list
+        #
+        # # if best_bikes > bikes and best_capacity > capacity:
+        # #     best_bikes, best_capacity = bikes, capacity
+        # #     best_object = object_i
+        # #     new_stations_best = new_stations.copy()
+        # #     t = True
+        # if t is False and random_num <= 10:
+        #     stations_i['bikes'] = stations_i['capacity'].apply(lambda x: round(x * randint(0, 100) / 100))
+        # else:
+        #     stations_i['bikes'] = new_stations_best['bikes'].apply(lambda x: round(x * randint(80, 120) / 100))
+        # print(best_object)
+        # bikes_list.append(bikes)
+        # bikes_best_list.append(best_bikes)
+        y1.append(re_bikes_i)
+        if re_bikes > re_bikes_i:
+            re_bikes = re_bikes_i
+        y2.append(re_bikes)
+    print(y1)
+    return re_bikes, y1, y2
 
 
 if __name__ == "__main__":
     start_time = time.time()
-    object_list, bikes_list, bikes_best_list = main(demand_i, zone_i, stations_i, 5)
+    re_bikes, y1, y2 = main(demand_i, zone_i, stations_i, 7)
     end_time = time.time()
-    print(object_list)
+    print(re_bikes)
     print('用时：%s s' % round(end_time - start_time))
-    print('原站点求可以满足的最大需求量10d,100轮')
+    print('再平衡')
 
     def DrawLinechart(y1, y2, title):
         x = range(len(y1))  # 生成0-10
@@ -93,14 +105,38 @@ if __name__ == "__main__":
         plt.plot(x, y2, c='B', label='best')
         plt.legend(loc='upper left')  # 图例的位置是左上
         plt.xlabel('round')  # X轴标签
-        plt.ylabel('value')  # Y轴标签
+        plt.ylabel('bikes')  # Y轴标签
         plt.title(title)  # 折线图标题
 
         plt.show()
 
 
+    DrawLinechart(y1, y2, 'bikes')
     # DrawLinechart(bikes_list, bikes_best_list, 'bikes')
-    DrawLinechart(bikes_list, bikes_best_list, 'bikes')
+
+
+
+# 再平衡 原站点 10day
+#  0.5 500轮  （50, 2190）
+#  0.5 2000轮 （1200, 2175.0）
+
+# 0.5 31day  100轮
+# 新站点 20267.0
+# 老站点 24828.0
+
+# 0.5 7day  100轮
+# 新站点 760
+# 老站点 2212.0
+
+
+
+
+
+
+
+
+
+
 
 
 # 在容量固定的情况下，看可以满足的最大需求量

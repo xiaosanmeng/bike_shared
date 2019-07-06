@@ -20,8 +20,6 @@ demand_i['gap'] = demand_i['end'] - demand_i['start']
 t = pd.merge(stations_i, zone_i, how='left', on='id')
 t = t.groupby('zone')['capacity'].sum().reset_index()
 t1 = demand_i[demand_i['day'] <= 31].groupby('zone')['gap'].sum().reset_index()
-
-# t1 = demand_i[(demand_i['day'] <= 31) & (demand_i['day'] >= 30)].groupby('zone')['gap'].sum().reset_index()
 t1 = pd.merge(t1, t, how='left', on='zone')
 t1['judge'] = t1['capacity'] - abs(t1['gap'])
 z = t1[t1['judge'] < 0]
