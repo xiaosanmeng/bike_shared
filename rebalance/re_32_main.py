@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from random import randint
-from re_31_object import object
+from re_32_object import object
 import time
 import matplotlib.pyplot as plt
 
@@ -18,22 +18,31 @@ stations_i = pd.read_csv('F:/bikedata/bike_datas/station_datas.csv')[['station_i
 def main(demand, zone, stations, day, re_times):
     # 构建新站点
     new_zone = pd.DataFrame()
-    new_stations = pd.DataFrame()
+    new_stations_i = pd.DataFrame()
+    zone_count_stations = zone.groupby(['zone'])['id'].count().reset_index().rename(columns={'id': 'count_stations'}) # 统计每个区域的站点数量
+
+    # 设置每个区域新站点的容量（取平均）
+    zone_capacity = pd.merge(stations, zone, how='left', on='id')
+    zone_capacity = zone_capacity.groupby('zone')['capacity'].sum().reset_index()
+    zone_capacity = pd.merge(zone_capacity, zone_count_stations, how='left', on='zone')
+    zone_capacity['capacity'] = round(zone_capacity['capacity'] / zone_capacity['count_stations'])
+
     # 新站点构建
-    # new_zone['zone'] = zone.drop(zone[zone[['zone']].duplicated()].index, axis=0)['zone']
-    # new_zone['id'] = new_zone['zone'].apply(lambda x: int(str(x)[::]))
-    # new_stations['id'] = new_zone['id']
-    # new_stations['capacity_up'] = 60
-    # new_stations['capacity'] = 60
-    # 新站点分割线
+    new_zone['zone'] = zone.drop(zone[zone[['zone']].duplicated()].index, axis=0)['zone']
+    new_zone['id'] = new_zone['zone'].apply(lambda x: int(str(x)[::]))
+    new_stations_i['id'] = new_zone['id']
+    new_stations_i = pd.merge(new_stations_i, zone_capacity[['zone', 'capacity']],
+                            how='left', left_on='id', right_on='zone')[['id', 'capacity']]
+
+    # 选取新站点
+    new_stations = new_stations_i.sample(50)
     stations_i = pd.concat([stations, new_stations])  # 加入新站点
     zone_i = pd.concat([new_zone, zone], sort=True)  # 加入新站点
     zone_count_stations = zone_i.groupby(['zone'])['id'].count().reset_index()  # 统计每个区域的站点数量
-
-    # 设置区域的初始车辆上下限
     zone_data_i = pd.merge(stations_i, zone_i, how='left', on='id')
     zone_data_i = zone_data_i.groupby('zone')['capacity'].sum().reset_index()
     zone_data_i['bikes'] = round(zone_data_i['capacity'] * 0.5)
+
     demand['gap'] = demand['end'] - demand['start']
     stations_i = stations_i.set_index('id')
 
@@ -62,26 +71,31 @@ def main(demand, zone, stations, day, re_times):
     return best_object, y1, y2
 
 
+
+
+
+
+
 if __name__ == "__main__":
     start_time = time.time()
-    re_bikes, y1, y2 = main(demand_i, zone_i, stations_i, 14, 30)
+    re_bikes, y1, y2 = main(demand_i, zone_i, stations_i, 7, 1)
     end_time = time.time()
     print(re_bikes)
     print('用时：%s s' % round(end_time - start_time))
     print('再平衡,14day,原站点')
 
-    def DrawLinechart(y1, y2, title):
-        x = range(len(y1))  # 生成0-10
-        plt.plot(x, y1, c="R", label='common')
-        plt.plot(x, y2, c='B', label='best')
-        plt.legend(loc='upper left')  # 图例的位置是左上
-        plt.xlabel('round')  # X轴标签
-        plt.ylabel('re_bikes')  # Y轴标签
-        plt.title(title)  # 折线图标题
-        plt.show()
-
-
-    DrawLinechart(y1, y2, 're_bikes')
+    # def DrawLinechart(y1, y2, title):
+    #     x = range(len(y1))  # 生成0-10
+    #     plt.plot(x, y1, c="R", label='common')
+    #     plt.plot(x, y2, c='B', label='best')
+    #     plt.legend(loc='upper left')  # 图例的位置是左上
+    #     plt.xlabel('round')  # X轴标签
+    #     plt.ylabel('re_bikes')  # Y轴标签
+    #     plt.title(title)  # 折线图标题
+    #     plt.show()
+    #
+    #
+    # DrawLinechart(y1, y2, 're_bikes')
     # DrawLinechart(bikes_list, bikes_best_list, 'bikes')
 
 
@@ -104,3 +118,5 @@ if __name__ == "__main__":
 # 0.5 14day 2000轮
 # 新站点   （170  4641.0）
 # 老站点 （7507   503.0）
+
+# 40  832.0  50 741.0  60 610.0
