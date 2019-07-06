@@ -67,7 +67,7 @@ def main(demand, zone, stations, day):
     return object_list
 
 start_time = time.time()
-z = main(demand_i, zone_i, stations_i, 5)
+z = main(demand_i, zone_i, stations_i, 14)
 end_time = time.time()
 print(z)
 print('用时：%s s' % round(end_time - start_time))

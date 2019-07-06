@@ -64,11 +64,11 @@ def main(demand, zone, stations, day):
 
 if __name__ == "__main__":
     start_time = time.time()
-    re_bikes, y1, y2 = main(demand_i, zone_i, stations_i, 7)
+    re_bikes, y1, y2 = main(demand_i, zone_i, stations_i, 14)
     end_time = time.time()
     print(re_bikes)
     print('用时：%s s' % round(end_time - start_time))
-    print('再平衡')
+    print('再平衡,14day,新站点')
 
     def DrawLinechart(y1, y2, title):
         x = range(len(y1))  # 生成0-10
