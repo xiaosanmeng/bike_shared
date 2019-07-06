@@ -94,7 +94,7 @@ def object(time_i, demand, zone, stations, zone_data, time):
         zone_data['bikes'] = zone_data['bikes'] + zone_data['gap']
         del zone_data['gap']
         print('day:', day, 're_bikes:', re_bikes)
-    return zone_data, re_bikes
+    return re_bikes
 
 
 
