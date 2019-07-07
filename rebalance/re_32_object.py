@@ -46,7 +46,7 @@ def object(time_i, demand, zone, stations, zone_data, time):
 
     def rebalance_bikes(zone_data, demand_i, bikes):
         # zone_data： 原始区域数据表
-        # demand_i： 当日的需求量表
+        # demand： 当日的需求量表
         zone_data_i = zone_data.copy()
         zone_data_i = pd.merge(zone_data_i, demand_i[['zone', 'gap']], how='left', on='zone')
         zone_data_i['bikes'] = zone_data_i['bikes'] + zone_data_i['gap']
