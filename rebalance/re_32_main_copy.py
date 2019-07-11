@@ -4,7 +4,6 @@ from random import randint
 from re_32_object import object
 import time
 import matplotlib.pyplot as plt
-import random
 
 # 读取区域需求量
 demand_i = pd.read_csv('F:/bikedata/bike_datas/test/zone_day.csv')
@@ -40,46 +39,81 @@ def main(demand, zone, stations, day, re_times):
     object_list = []
     y1 = []
     y2 = []
-
-    c = [0] * 379
-    for i in range(120):
-        c[i] = 1
-    for j in range(100):
-        random.shuffle(c)
-        new_stations_i['t'] = c
-        new_stations = new_stations_i[new_stations_i['t'] == 1][['id', 'capacity']]
-        stations_i = pd.concat([stations, new_stations])  # 加入新站点
+    for j in range(1):
+        # new_stations = new_stations_i.sample(50)
+        # stations_i = pd.concat([stations, new_stations])  # 加入新站点
+        stations_i = pd.concat([stations, new_stations_i])  # 加入新站点
         zone_i = pd.concat([new_zone, zone], sort=True)  # 加入新站点
         zone_data_i = pd.merge(stations_i, zone_i, how='left', on='id')
         zone_data_i = zone_data_i.groupby('zone')['capacity'].sum().reset_index()
         zone_data_i['bikes'] = round(zone_data_i['capacity'] * 0.5)
         stations_i = stations_i.set_index('id')
 
+
         # y1 = []
         # y2 = []
+        t2 = (2, 200)
+        alpha = 0.98
+        t = t2[1]
+        solutioncurrent = pd.DataFrame()
+        valuecurrent = 999999
+        valuebest = 999999
+        valuenew = 0
+        while t > t2[0]:
+            for time_i in range(re_times):
+                valuenew = object(time_i, demand, zone_i, stations_i, zone_data_i, day)
+                if valuenew < valuecurrent:  # 接受该解
+                    # 更新solutioncurrent 和solutionbest
+                    valuecurrent = valuenew
+                    solutioncurrent = zone_data_i.copy()
+
+                    if valuenew < valuebest:
+                        valuebest = valuenew
+                        solutionbest = zone_data_i.copy()
+                else:  # 按一定的概率接受该解
+                    if np.random.rand() < np.exp(-(valuenew - valuecurrent) / t):
+                        # if np.random.rand() < (2/math.pi) * math.atan((valuenew - valuecurrent) * 0.000001*t):
+                        valuecurrent = valuenew
+                        solutioncurrent = zone_data_i.copy()
+                    else:
+                        zone_data_i = solutioncurrent.copy()
+                if np.random.rand() > 0.95:
+                    zone_data_i['bikes'] = solutioncurrent['bikes'].apply(lambda x: round(x * randint(80, 120) / 100))
+                else:
+                    zone_data_i['bikes'] = zone_data_i['capacity'].apply(lambda x: round(x * randint(0, 100) / 100))
 
 
-        best_object = 1000000
-        best_zone = pd.DataFrame()
-        for time_i in range(re_times):
-            re_bikes = object(time_i, demand, zone_i, stations_i, zone_data_i, day)
-            t = False
-            if best_object >= re_bikes:
-                best_object = re_bikes
-                best_zone = zone_data_i.copy()
-                t = True
-            if t is False and np.random.rand() <= 0.1:
-                zone_data_i['bikes'] = zone_data_i['capacity'].apply(lambda x: round(x * randint(0, 100) / 100))
-            else:
-                zone_data_i['bikes'] = best_zone['bikes'].apply(lambda x: round(x * randint(80, 120) / 100))
-            print(j+1, time_i + 1, best_object)
+                print(t, j + 1, time_i + 1, valuebest)
+                y1.append(valuecurrent)
+                y2.append(valuebest)
+            t = alpha * t
+
+
+
+
+
+        # best_object = 1000000
+        # best_zone = pd.DataFrame()
+        # for time_i in range(re_times):
+        #     re_bikes = object(time_i, demand, zone_i, stations_i, zone_data_i, day)
+        #     random_num = randint(0, 100)
+        #     t = False
+        #     if best_object > re_bikes:
+        #         best_object = re_bikes
+        #         best_zone = zone_data_i.copy()
+        #         t = True
+        #     if t is False and random_num <= 10:
+        #         zone_data_i['bikes'] = zone_data_i['capacity'].apply(lambda x: round(x * randint(0, 100) / 100))
+        #     else:
+        #         zone_data_i['bikes'] = best_zone['bikes'].apply(lambda x: round(x * randint(80, 120) / 100))
+
 
             # y1.append(re_bikes)
             # y2.append(best_object)
-        if best_object_sum > best_object:
-            best_object_sum = best_object
-        y1.append(best_object)
-        y2.append(best_object_sum)
+        # if best_object_sum > best_object:
+        #     best_object_sum = best_object
+        # y1.append(best_object)
+        # y2.append(best_object_sum)
 
     print(best_object_sum, y1)
     return best_object_sum, y1, y2
@@ -88,11 +122,11 @@ def main(demand, zone, stations, day, re_times):
 
 if __name__ == "__main__":
     start_time = time.time()
-    re_bikes, y1, y2 = main(demand_i, zone_i, stations_i, 7, 100)
+    re_bikes, y1, y2 = main(demand_i, zone_i, stations_i, 7, 1)
     end_time = time.time()
     print(re_bikes)
     print('用时：%s s' % round(end_time - start_time))
-    print('120个')
+    print('再平衡,14day,原站点')
 
     def DrawLinechart(y1, y2, title):
         x = range(len(y1))  # 生成0-10

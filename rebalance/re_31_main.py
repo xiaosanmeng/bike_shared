@@ -64,7 +64,7 @@ def main(demand, zone, stations, day, re_times):
 
 if __name__ == "__main__":
     start_time = time.time()
-    re_bikes, y1, y2 = main(demand_i, zone_i, stations_i, 14, 30)
+    re_bikes, y1, y2 = main(demand_i, zone_i, stations_i, 14, 31)
     end_time = time.time()
     print(re_bikes)
     print('用时：%s s' % round(end_time - start_time))
