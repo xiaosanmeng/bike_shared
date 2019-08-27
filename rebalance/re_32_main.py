@@ -38,12 +38,10 @@ def main(demand, zone, stations, day, re_times):
     # 选取新站点
     best_object_sum = 10000000
     object_list = []
+
     y1 = []
     y2 = []
-
-    c = [0] * 379
-    for i in range(120):
-        c[i] = 1
+    c = [0] * 120 + [0] * (379 - 120)
     for j in range(100):
         random.shuffle(c)
         new_stations_i['t'] = c
@@ -88,7 +86,7 @@ def main(demand, zone, stations, day, re_times):
 
 if __name__ == "__main__":
     start_time = time.time()
-    re_bikes, y1, y2 = main(demand_i, zone_i, stations_i, 7, 100)
+    re_bikes, y1, y2 = main(demand_i, zone_i, stations_i, 14, 1)
     end_time = time.time()
     print(re_bikes)
     print('用时：%s s' % round(end_time - start_time))
