@@ -16,7 +16,7 @@ stations_i = pd.read_csv('F:/bikedata/bike_datas/station_datas.csv')[['station_i
     rename(columns={'station_id': 'id'})
 
 
-def main(demand, zone, stations, day, re_times):
+def main(demand, zone, stations, day, re_times, new_staions):
     # 构建新站点
     new_zone = pd.DataFrame()
     new_stations_i = pd.DataFrame()
@@ -41,7 +41,7 @@ def main(demand, zone, stations, day, re_times):
 
     y1 = []
     y2 = []
-    c = [0] * 120 + [0] * (379 - 120)
+    c = [1] * new_staions + [0] * (379 - new_staions)
     for j in range(100):
         random.shuffle(c)
         new_stations_i['t'] = c
@@ -86,7 +86,8 @@ def main(demand, zone, stations, day, re_times):
 
 if __name__ == "__main__":
     start_time = time.time()
-    re_bikes, y1, y2 = main(demand_i, zone_i, stations_i, 14, 1)
+    new_staions = 30
+    re_bikes, y1, y2 = main(demand_i, zone_i, stations_i, 7, 1, new_staions)
     end_time = time.time()
     print(re_bikes)
     print('用时：%s s' % round(end_time - start_time))

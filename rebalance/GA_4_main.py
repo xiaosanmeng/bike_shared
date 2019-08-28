@@ -183,8 +183,8 @@ def main(demand, zone, stations, distance, day, re_times, stations_type, new_sta
                     build_index.pop(build_index.index(z))
 
         return X
-    m = 40  #规模
-    N = 50  #迭代次数
+    m = 20  #规模
+    N = 120  #迭代次数
     Pc = 0.8  #交配概率
     Pm = 0.02  #变异概率
     n = 379
@@ -233,29 +233,33 @@ def DrawLinechart(y1, y2, title):
 
 if __name__ == "__main__":
     # 读取区域需求量
-    demand_i = pd.read_csv('F:/bikedata/bike_datas/test/zone_day.csv')
-    # 读取区域包含的站点信息
-    zone_i = pd.read_csv('F:/bikedata/bike_datas/station_datas.csv').rename(
-        columns={'station_id': 'id', 'zone_id': 'zone'})[['id', 'zone']]
-    # 读取站点信息
-    stations_i = pd.read_csv('F:/bikedata/bike_datas/station_datas.csv')[['station_id', 'capacity']]. \
-        rename(columns={'station_id': 'id'})
-    distance = pd.read_csv('F:/bikedata/bike_datas/zones_distance_matrix.csv')
-    distance = distance.set_index('Unnamed: 0')
+    re_bikes_list = []
+    for i in range(10):
+        demand_i = pd.read_csv('F:/bikedata/bike_datas/test/zone_day.csv')
+        # 读取区域包含的站点信息
+        zone_i = pd.read_csv('F:/bikedata/bike_datas/station_datas.csv').rename(
+            columns={'station_id': 'id', 'zone_id': 'zone'})[['id', 'zone']]
+        # 读取站点信息
+        stations_i = pd.read_csv('F:/bikedata/bike_datas/station_datas.csv')[['station_id', 'capacity']]. \
+            rename(columns={'station_id': 'id'})
+        distance = pd.read_csv('F:/bikedata/bike_datas/zones_distance_matrix.csv')
+        distance = distance.set_index('Unnamed: 0')
 
-    start_time = time.time()
-    stations_type = 0  # 0-原站点  1-加入新站点
-    new_stations = 30  # 构建的新站点个数
-    days = 14
-    re_bikes, object_list, object_average_list, stations_num = main(demand_i, zone_i, stations_i, distance, days, 3000, stations_type, new_stations)
-    end_time = time.time()
-    print(re_bikes)
-    print('用时：%s s' % round(end_time - start_time))
-    if stations_type == 0:
-        print('原站点')
-    else:
-        print('构建%s个新站点' % new_stations)
+        start_time = time.time()
+        stations_type = 1  # 0-原站点  1-加入新站点
+        new_stations = 120  # 构建的新站点个数
+        days = 7
+        re_bikes, object_list, object_average_list, stations_num = main(demand_i, zone_i, stations_i, distance, days, 3000, stations_type, new_stations)
+        end_time = time.time()
+        print(re_bikes)
+        print('用时：%s s' % round(end_time - start_time))
+        if stations_type == 0:
+            print('原站点')
+        else:
+            print('构建%s个新站点' % new_stations)
+        re_bikes_list.append(re_bikes)
+    print('20/60', re_bikes_list)
 
-    DrawLinechart(object_list, object_average_list, 're_bikes')
+    # DrawLinechart(object_list, object_average_list, 're_bikes')
     # DrawLinechart(y1, bikes_best_list, 'bikes')
 
