@@ -125,7 +125,7 @@ def main(demand, zone, stations, distance, day, re_times, stations_type, new_sta
         return X1
 
     ##交叉
-    def match(X, m, n, p):
+    def match(X, m, pr, p):
         r = np.random.rand(m)
         k = [0] * m
         for i in range(m):
@@ -152,7 +152,7 @@ def main(demand, zone, stations, distance, day, re_times, stations_type, new_sta
                 v_index = [index for index, i in enumerate(X[v]) if i == 1]
                 u_i = list(set(u_index).difference(set(v_index)))  # 两个基因的索引组，相互求差集
                 v_i = list(set(v_index).difference(set(u_index)))
-                min_length = round(min(len(u_i), len(v_i))/2)  # 得到差集长度最少的索引组长度
+                min_length = round(min(len(u_i), len(v_i))*pr)  # 得到差集长度最少的索引组长度
                 random.shuffle(u_i)
                 random.shuffle(v_i)
                 u_i = u_i[:min_length]
@@ -173,20 +173,21 @@ def main(demand, zone, stations, distance, day, re_times, stations_type, new_sta
     ##变异
     def vari(X, m, n, p):
         for i in range(m):
-            build_index = [index for index, i in enumerate(X[i]) if i == 1]  # 找到为1的基因索引
-            un_index = [index for index, i in enumerate(X[i]) if i == 0]
-            for j in un_index:
+            build_index = [index for index, i in enumerate(X[i]) if i == 1]  # 找到为已建设的站点
+            un_index = [index for index, i in enumerate(X[i]) if i == 0]  # 找到未建设的站点
+            for j in un_index:  # 遍历未建设的站点
                 q = np.random.rand()
-                if q < p:
+                if q < p:  # 若变异，则从已建站点随机选择一个，两个交换
                     z = random.choice(build_index)
                     X[i][j], X[i][z] = 1, 0
                     build_index.pop(build_index.index(z))
-
         return X
-    m = 20  #规模
-    N = 120  #迭代次数
-    Pc = 0.8  #交配概率
-    Pm = 0.02  #变异概率
+
+    m = 20  # 规模
+    N = 120  # 迭代次数
+    Pc = 0.8  # 交叉概率
+    Pm = 0.02  # 变异概率
+    Pcr = 0.7  # 交叉比例
     n = 379
     C = init(m, new_stations_num)
     S, F = fitness(C)
@@ -197,7 +198,7 @@ def main(demand, zone, stations, distance, day, re_times, stations_type, new_sta
         print('第%s代' % (i+1), '总共%s代' % N)
         p = rate(F)
         C = chose(p, C, m, n)
-        C = match(C, m, n, Pc)
+        C = match(C, m, Pcr, Pc)
         C = vari(C, m, n, Pm)
         S, F = fitness(C)
         B1, y1, y1_mean = best_x(F, m)
@@ -207,6 +208,7 @@ def main(demand, zone, stations, distance, day, re_times, stations_type, new_sta
         Y.append(y)
         Y1.append(y1_mean)
         print([sum(i) for i in C])
+    print('种群:', m, '迭代次数:', N, '交叉概率:', Pc, '变异概率:', Pm, '交叉比例:', Pcr)
 
     # print("最大值为：", 1/y, '站点个数', B1)
     #
@@ -234,7 +236,8 @@ def DrawLinechart(y1, y2, title):
 if __name__ == "__main__":
     # 读取区域需求量
     re_bikes_list = []
-    for i in range(10):
+    t = 1
+    for i in range(t):
         demand_i = pd.read_csv('F:/bikedata/bike_datas/test/zone_day.csv')
         # 读取区域包含的站点信息
         zone_i = pd.read_csv('F:/bikedata/bike_datas/station_datas.csv').rename(
@@ -258,7 +261,11 @@ if __name__ == "__main__":
         else:
             print('构建%s个新站点' % new_stations)
         re_bikes_list.append(re_bikes)
-    print('20/60', re_bikes_list)
+        if t == 1:
+            DrawLinechart(object_list, object_average_list, 're_bikes')
+    if t != 1:
+        print(re_bikes_list)
+        print('average:', sum(re_bikes_list)/t, 'min:', min(re_bikes_list))
 
     # DrawLinechart(object_list, object_average_list, 're_bikes')
     # DrawLinechart(y1, bikes_best_list, 'bikes')
