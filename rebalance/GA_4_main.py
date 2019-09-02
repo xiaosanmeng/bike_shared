@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import random
 
 
-def main(demand, zone, stations, distance, day, re_times, stations_type, new_stations_num):
+def main(demand, zone, stations, distance, day, re_times, stations_type, new_stations_num, t):
     # 构建新站点
     new_zone = pd.DataFrame()
     new_stations_i = pd.DataFrame()
@@ -184,10 +184,10 @@ def main(demand, zone, stations, distance, day, re_times, stations_type, new_sta
         return X
 
     m = 20  # 规模
-    N = 120  # 迭代次数
+    N = 50  # 迭代次数
     Pc = 0.8  # 交叉概率
-    Pm = 0.02  # 变异概率
-    Pcr = 0.7  # 交叉比例
+    Pm = 0.01  # 变异概率
+    Pcr = 0.5  # 交叉比例
     n = 379
     C = init(m, new_stations_num)
     S, F = fitness(C)
@@ -195,7 +195,7 @@ def main(demand, zone, stations, distance, day, re_times, stations_type, new_sta
     Y = [y]
     Y1 = [y_mean]
     for i in range(N):
-        print('第%s代' % (i+1), '总共%s代' % N)
+        print('第%s次实验' % (t+1), '第%s代' % (i+1), '总共%s代' % N)
         p = rate(F)
         C = chose(p, C, m, n)
         C = match(C, m, Pcr, Pc)
@@ -231,12 +231,10 @@ def DrawLinechart(y1, y2, title):
     plt.show()
 
 
-
-
 if __name__ == "__main__":
     # 读取区域需求量
     re_bikes_list = []
-    t = 1
+    t = 20
     for i in range(t):
         demand_i = pd.read_csv('F:/bikedata/bike_datas/test/zone_day.csv')
         # 读取区域包含的站点信息
@@ -252,7 +250,7 @@ if __name__ == "__main__":
         stations_type = 1  # 0-原站点  1-加入新站点
         new_stations = 120  # 构建的新站点个数
         days = 7
-        re_bikes, object_list, object_average_list, stations_num = main(demand_i, zone_i, stations_i, distance, days, 3000, stations_type, new_stations)
+        re_bikes, object_list, object_average_list, stations_num = main(demand_i, zone_i, stations_i, distance, days, 3000, stations_type, new_stations, t)
         end_time = time.time()
         print(re_bikes)
         print('用时：%s s' % round(end_time - start_time))

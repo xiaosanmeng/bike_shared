@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from random import randint
-from re_4_object import object, set_bikes
+from re_4_object import object, set_bikes, aaa
 import time
 import matplotlib.pyplot as plt
 import random
@@ -32,6 +32,7 @@ def main(demand, zone, stations, distance, day, re_times, stations_type, new_sta
     best_object_sum = 10000000
     best_object = 1000000
     object_list = []
+    best_bikes = None
     #
 
     y1 = []
@@ -52,42 +53,47 @@ def main(demand, zone, stations, distance, day, re_times, stations_type, new_sta
         stations_i = stations_i.set_index('id')
 
     #  确定车子数量分割线
-        best_zone = pd.DataFrame()
-        re_bikes = object(1, demand, zone_i, stations_i, zone_data_i, distance, day)
-        if best_object >= re_bikes:
-            best_object = re_bikes
-        y1.append(re_bikes)
-        y2.append(best_object)
-        print(j + 1, best_object)
-    return best_object, y1, y2
+    #     best_zone = pd.DataFrame()
+    #     re_bikes = object(1, demand, zone_i, stations_i, zone_data_i.copy(), distance, day)
+    #     if best_object >= re_bikes:
+    #         best_object = re_bikes
+    #         best_bikes = zone_data_i
+    #     y1.append(re_bikes)
+    #     y2.append(best_object)
+    #     print(j + 1, best_object)
+    # return best_object, y1, y2
 
-        # y1 = []
-        # y2 = []
-        #
-        #
-        # best_object = 1000000
-        # best_zone = pd.DataFrame()
-        # for time_i in range(100):
-        #     re_bikes = object(time_i, demand, zone_i, stations_i, zone_data_i, distance, day)
-        #     t = False
-        #     if best_object >= re_bikes:
-        #         best_object = re_bikes
-        #         best_zone = zone_data_i.copy()
-        #         t = True
-        #     if t is False and np.random.rand() <= 0.1:
-        #         zone_data_i['bikes'] = zone_data_i['capacity'].apply(lambda x: round(x * randint(0, 100) / 100))
-        #     else:
-        #         zone_data_i['bikes'] = best_zone['bikes'].apply(lambda x: round(x * randint(80, 120) / 100))
-        #     print(j+1, time_i + 1, best_object)
-        #
-        #     # y1.append(re_bikes)
-        #     # y2.append(best_object)
-        # if best_object_sum > best_object:
-        #     best_object_sum = best_object
-        # y1.append(best_object)
-        # y2.append(best_object_sum)
+        y1 = []
+        y2 = []
+
+
+        best_object = 1000000
+        best_zone = pd.DataFrame()
+        for time_i in range(500):
+            zone_data_i['bikes'] = zone_data_i.apply(aaa, axis=1)  # 限制车子数量在容量范围内
+            re_bikes = object(time_i, demand, zone_i, stations_i, zone_data_i.copy(), distance, day)
+            t = False
+            if best_object >= re_bikes:
+                best_object = re_bikes
+                best_zone = zone_data_i.copy()
+                t = True
+            if t is False and np.random.rand() <= 0.1:
+                zone_data_i['bikes'] = zone_data_i['capacity'].apply(lambda x: round(x * randint(0, 100) / 100))
+            else:
+                zone_data_i['bikes'] = best_zone['bikes'].apply(lambda x: round(x * randint(80, 120) / 100))
+            print(j+1, time_i + 1, best_object)
+
+            # y1.append(re_bikes)
+            # y2.append(best_object)
+        if best_object_sum > best_object:
+            best_object_sum = best_object
+            best_bikes = best_zone
+
+        y1.append(best_object)
+        y2.append(best_object_sum)
 
     print(best_object_sum, y1)
+    best_bikes.to_csv('F:/bikedata/bike_datas/output/output.csv', index=None)
     return best_object_sum, y1, y2
 
 if __name__ == "__main__":
